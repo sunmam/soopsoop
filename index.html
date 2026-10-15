@@ -63,6 +63,7 @@
   /* 표지 */
   .cover { container-type: inline-size; }
   .ph-title { font-size: clamp(11px, 11cqw, 22px); }
+  .ph-quote { font-size: clamp(10px, 7.5cqw, 16px); }
   .cover-shadow { box-shadow: 0 1px 1px rgba(43,42,40,.06), 0 8px 16px -10px rgba(43,42,40,.35); transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease; }
   .card:hover .cover-shadow, .card:focus-visible .cover-shadow { transform: translateY(-6px) rotate(-.4deg); box-shadow: 0 2px 2px rgba(43,42,40,.05), 0 22px 30px -16px rgba(43,42,40,.45); }
   .spine { position: absolute; inset: 0; pointer-events: none;
@@ -225,14 +226,10 @@
         <!-- 대분류 -->
         <div>
           <span class="label">대분류</span>
-          <div id="mainTypeGroup" class="grid grid-cols-3 gap-2" role="radiogroup">
-            <label class="chip-radio relative"><input type="radio" name="mainType" value="도서" checked><span class="w-full py-2.5 rounded-xl text-sm font-medium">도서</span></label>
-            <label class="chip-radio relative"><input type="radio" name="mainType" value="영화"><span class="w-full py-2.5 rounded-xl text-sm font-medium">영화</span></label>
-            <label class="chip-radio relative"><input type="radio" name="mainType" value="드라마"><span class="w-full py-2.5 rounded-xl text-sm font-medium">드라마</span></label>
-          </div>
+          <div id="mainTypeGroup" class="grid grid-cols-4 sm:grid-cols-7 gap-2" role="radiogroup"></div>
           <div id="subWrap" class="collapse-wrap open">
             <div>
-              <span class="label mt-4">도서 분류</span>
+              <span id="subLabel" class="label mt-4">도서 분류</span>
               <div id="subGroup" class="flex flex-wrap gap-1.5" role="radiogroup"></div>
             </div>
           </div>
@@ -245,7 +242,7 @@
           </div>
           <div class="flex-1 min-w-0 space-y-4">
             <div>
-              <label class="label" for="fTitle">제목 <small>필수</small></label>
+              <label id="titleLabel" class="label" for="fTitle">제목 <small>필수</small></label>
               <input id="fTitle" class="field font-serif" type="text" placeholder="작품 제목" maxlength="120">
             </div>
             <div>
@@ -281,7 +278,7 @@
             <input id="fDate" class="field" type="date">
           </div>
           <div>
-            <span class="label">별점 <small>반 개 단위로 누를 수 있어요</small></span>
+            <span class="label">별점 <small id="ratingHint">반 개 단위로 누를 수 있어요</small></span>
             <div class="flex items-center gap-3 h-[46px]">
               <div id="ratingInput" class="relative inline-block text-[34px] cursor-pointer select-none touch-none outline-none rounded focus-visible:ring-2 focus-visible:ring-moss/40"
                    tabindex="0" role="slider" aria-label="별점" aria-valuemin="1" aria-valuemax="5" aria-valuenow="0"></div>
@@ -297,7 +294,7 @@
         </div>
 
         <div>
-          <label class="label" for="fQuote">인상 깊은 한 줄</label>
+          <label id="quoteLabel" class="label" for="fQuote">인상 깊은 한 줄</label>
           <textarea id="fQuote" class="field font-serif resize-none leading-relaxed" rows="2" maxlength="1000" placeholder="마음에 남은 문장이나 대사를 옮겨 적어 보세요"></textarea>
         </div>
 
@@ -467,19 +464,37 @@ const REVIEW_MAX = 45000;                            // 시트 셀 한도(5만 �
 const LOCAL_IMAGE_MAX = 40000;                       // 기기에 직접 넣는 사진(data URL) 최대 글자 수
 const SAMPLE_IDS = new Set(['1001', '1002', '1003', '1004', '1005', '1006', '1007']);
 
-const MAIN_TYPES = ['도서', '영화', '드라마'];
-const BOOK_SUBS = ['시', '소설', '그림책', '인문학', '자연과학', '종교·예술', '기타'];
-const CREATOR_LABEL = { '도서': '작가', '영화': '감독', '드라마': '연출' };
+const MAIN_TYPES = ['도서', '영화', '드라마', '강연', '어록', '뮤직', '이미지'];
+/** 대분류별 하위 분류 (없으면 하위 분류 없음) */
+const SUBS = {
+  '도서':   ['시', '소설', '에세이', '그림책', '인문학', '자연과학', '종교·예술', '기타'],
+  '강연':   ['강의', '세미나·토크', '팟캐스트', '영상 강연', '기타'],
+  '어록':   ['명언', '책 속 문장', '대사', '노랫말', '일상의 말', '기타'],
+  '뮤직':   ['가요', '팝', '클래식', '재즈', 'OST', '인디', '기타'],
+  '이미지': ['그림', '사진', '전시', '건축·공간', '디자인', '기타']
+};
+const DEFAULT_SUB = { '도서': '소설', '강연': '강의', '어록': '명언', '뮤직': '가요', '이미지': '그림' };
+const subsOf = type => SUBS[type] || [];
+const CREATOR_LABEL = { '도서': '작가', '영화': '감독', '드라마': '연출', '강연': '연사', '어록': '말한 이', '뮤직': '아티스트', '이미지': '작가' };
+const CREATOR_PLACEHOLDER = { '도서': '작가 이름', '영화': '감독 이름', '드라마': '연출자 이름', '강연': '연사 이름', '어록': '누가 한 말인가요?', '뮤직': '가수 · 연주자', '이미지': '작가 · 사진가' };
+const TAB_LABEL = { '도서': '도서 전체' };
+const RATING_OPTIONAL = new Set(['어록']);   // 어록은 별점 없이도 저장
+// 표지 색: 도서는 하위 분류별, 나머지는 대분류별
 const COVER_TONES = {
   '시':       ['#EDE8F1', '#5E5470'],
   '소설':     ['#E6EDEF', '#3F5560'],
+  '에세이':   ['#F3ECE3', '#7A5B44'],
   '그림책':   ['#F6EADB', '#8A5A2E'],
   '인문학':   ['#EDE7DB', '#5C5240'],
   '자연과학': ['#E3ECE1', '#3F5A3D'],
   '종교·예술':['#F2E5E4', '#74424A'],
   '기타':     ['#ECEAE5', '#55524C'],
   '영화':     ['#E5E3DF', '#2F2E2B'],
-  '드라마':   ['#E6E9F0', '#3A4562']
+  '드라마':   ['#E6E9F0', '#3A4562'],
+  '강연':     ['#E8ECE4', '#465540'],
+  '어록':     ['#F5F1E6', '#5B4E3A'],
+  '뮤직':     ['#E9E6F0', '#45405E'],
+  '이미지':   ['#EEE8E1', '#6A5644']
 };
 
 /* ---------- 샘플 데이터 ---------- */
@@ -582,11 +597,12 @@ function fmtBytes(b) {
   return `${(b / 1024 ** 3).toFixed(1)}GB`;
 }
 function categoryLabel(r) {
-  return r.mainType === '도서' && r.subCategory ? `도서 › ${r.subCategory}` : r.mainType;
+  return r.subCategory ? `${r.mainType} › ${r.subCategory}` : r.mainType;
 }
 function toneOf(r) {
-  const key = r.mainType === '도서' ? (r.subCategory || '기타') : r.mainType;
-  return { key, tone: COVER_TONES[key] || COVER_TONES['기타'] };
+  const key = r.subCategory || r.mainType;                       // 표지에 적히는 이름
+  const toneKey = r.mainType === '도서' ? (r.subCategory || '기타') : r.mainType;
+  return { key, tone: COVER_TONES[toneKey] || COVER_TONES['기타'] };
 }
 function starsHTML(rating, cls = '') {
   const pct = Math.max(0, Math.min(5, Number(rating) || 0)) / 5 * 100;
@@ -594,11 +610,16 @@ function starsHTML(rating, cls = '') {
 }
 function coverHTML(r) {
   const { key, tone: [bg, fg] } = toneOf(r);
+  // 어록은 표지에 제목 대신 그 말을 적음
+  const isSaying = r.mainType === '어록' && r.quote;
   const placeholder = `
     <div class="absolute inset-0 flex p-[8%]" style="background:${bg};color:${fg}">
       <div class="flex-1 flex flex-col items-center justify-center text-center px-[6%] border" style="border-color:${fg}2e;box-shadow:inset 0 0 0 3px ${bg},inset 0 0 0 4px ${fg}1f">
         <span class="text-[10px] tracking-[0.3em] opacity-70">${esc(key)}</span>
-        <span class="ph-title font-serif font-semibold mt-3 leading-snug line-clamp-4">${esc(r.title || '제목 없음')}</span>
+        ${isSaying
+          ? `<span class="font-serif text-[1.6em] leading-none opacity-40 mt-2">“</span>
+             <span class="ph-quote font-serif leading-relaxed line-clamp-5">${esc(r.quote)}</span>`
+          : `<span class="ph-title font-serif font-semibold mt-3 leading-snug line-clamp-4">${esc(r.title || '제목 없음')}</span>`}
         <span class="w-6 h-px my-3" style="background:${fg}55"></span>
         <span class="text-[11px] opacity-80 line-clamp-1">${esc(r.creator)}</span>
       </div>
@@ -629,7 +650,7 @@ function normalizeRecord(r = {}) {
   return {
     id: r.id ?? newId(),
     mainType,
-    subCategory: mainType === '도서' ? (BOOK_SUBS.includes(r.subCategory) ? r.subCategory : '기타') : '',
+    subCategory: subsOf(mainType).length ? (subsOf(mainType).includes(r.subCategory) ? r.subCategory : '기타') : '',
     title: String(r.title ?? '').trim(),
     creator: String(r.creator ?? '').trim(),
     date: /^\d{4}-\d{2}-\d{2}$/.test(r.date) ? r.date : today(),
@@ -934,7 +955,7 @@ function getVisibleRecords() {
   const terms = state.q.trim().toLowerCase().split(/\s+/).filter(Boolean).map(t => t.replace(/^#/, ''));
   const list = state.records.filter(r => {
     if (state.tab !== '전체' && r.mainType !== state.tab) return false;
-    if (state.tab === '도서' && state.sub && r.subCategory !== state.sub) return false;
+    if (state.sub && r.subCategory !== state.sub) return false;
     if (terms.length) {
       const hay = [r.title, r.creator, r.tags.join(' '), r.quote, r.review].join(' ').toLowerCase();
       if (!terms.every(t => hay.includes(t))) return false;
@@ -955,7 +976,7 @@ function getVisibleRecords() {
 function renderTabs() {
   const counts = { '전체': state.records.length };
   MAIN_TYPES.forEach(t => counts[t] = state.records.filter(r => r.mainType === t).length);
-  const tabs = [['전체', '전체보기'], ['도서', '도서 전체'], ['영화', '영화'], ['드라마', '드라마']];
+  const tabs = [['전체', '전체보기'], ...MAIN_TYPES.map(t => [t, TAB_LABEL[t] || t])];
   $('#tabs').innerHTML = tabs.map(([val, label]) => {
     const on = state.tab === val;
     return `<button role="tab" aria-selected="${on}" data-tab="${val}"
@@ -963,16 +984,18 @@ function renderTabs() {
       ${label}<span class="ml-1.5 text-[11px] ${on ? 'text-white/60' : 'text-faint'}">${counts[val]}</span></button>`;
   }).join('');
 
-  const books = state.records.filter(r => r.mainType === '도서');
-  $('#subChips').innerHTML = BOOK_SUBS.map(s => {
+  const subs = subsOf(state.tab);
+  const inTab = state.records.filter(r => r.mainType === state.tab);
+  // 접힐 때는 이전 칩을 그대로 두어 애니메이션이 자연스럽게
+  if (subs.length) $('#subChips').innerHTML = subs.map(s => {
     const on = state.sub === s;
-    const n = books.filter(r => r.subCategory === s).length;
-    const fg = COVER_TONES[s][1];
+    const n = inTab.filter(r => r.subCategory === s).length;
+    const fg = toneOf({ mainType: state.tab, subCategory: s }).tone[1];
     return `<button data-sub="${esc(s)}" aria-pressed="${on}"
       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] border transition ${on ? 'bg-mossLight border-moss/40 text-moss font-medium' : 'border-line bg-white/60 text-sub hover:text-ink hover:border-[#CFC8B8]'}">
       <span class="w-1.5 h-1.5 rounded-full" style="background:${fg};opacity:.7"></span>${esc(s)}<span class="text-[11px] ${on ? 'text-moss/70' : 'text-faint'}">${n}</span></button>`;
   }).join('');
-  $('#subChipsWrap').classList.toggle('open', state.tab === '도서');
+  $('#subChipsWrap').classList.toggle('open', subs.length > 0);
 }
 
 function cardHTML(r) {
@@ -1076,8 +1099,8 @@ function openDetail(id) {
   if (!r) return;
   state.detailId = r.id;
   const { tone: [bg, fg] } = toneOf(r);
-  const badge = r.mainType === '도서' && r.subCategory
-    ? `도서 <span class="mx-1 opacity-50">›</span> ${esc(r.subCategory)}` : esc(r.mainType);
+  const badge = r.subCategory
+    ? `${esc(r.mainType)} <span class="mx-1 opacity-50">›</span> ${esc(r.subCategory)}` : esc(r.mainType);
 
   $('#detailBody').innerHTML = `
     <div class="relative h-40 sm:h-48 overflow-hidden" style="background:${bg}">
@@ -1157,18 +1180,38 @@ function handleDelete() {
 /* =========================================================
    새 기록 / 수정 폼
    ========================================================= */
-function buildSubGroup() {
-  $('#subGroup').innerHTML = BOOK_SUBS.map(s => `
-    <label class="chip-radio relative"><input type="radio" name="subCategory" value="${esc(s)}">
+function buildMainTypeGroup() {
+  $('#mainTypeGroup').innerHTML = MAIN_TYPES.map((t, i) => `
+    <label class="chip-radio relative"><input type="radio" name="mainType" value="${esc(t)}" ${i ? '' : 'checked'}>
+      <span class="w-full py-2.5 rounded-xl text-sm font-medium">${esc(t)}</span></label>`).join('');
+}
+
+function buildSubGroup(type, selected) {
+  const subs = subsOf(type);
+  if (!subs.length) return;                 // 접히는 동안은 이전 칩 유지
+  const pick = subs.includes(selected) ? selected : (DEFAULT_SUB[type] || subs[0]);
+  $('#subLabel').textContent = `${type} 분류`;
+  $('#subGroup').innerHTML = subs.map(s => `
+    <label class="chip-radio relative"><input type="radio" name="subCategory" value="${esc(s)}" ${s === pick ? 'checked' : ''}>
       <span class="px-3.5 py-2 rounded-full text-[13px]">${esc(s)}</span></label>`).join('');
 }
 
-function setMainType(type) {
+function setMainType(type, sub) {
+  const hasSubs = subsOf(type).length > 0;
   $$('input[name="mainType"]').forEach(i => i.checked = i.value === type);
-  $('#subWrap').classList.toggle('open', type === '도서');
-  $$('input[name="subCategory"]').forEach(i => i.tabIndex = type === '도서' ? 0 : -1);
+  buildSubGroup(type, sub ?? currentSub());
+  $('#subWrap').classList.toggle('open', hasSubs);
+  $$('input[name="subCategory"]').forEach(i => i.tabIndex = hasSubs ? 0 : -1);
   $('#creatorLabel').textContent = CREATOR_LABEL[type];
-  $('#fCreator').placeholder = { '도서': '작가 이름', '영화': '감독 이름', '드라마': '연출자 이름' }[type];
+  $('#fCreator').placeholder = CREATOR_PLACEHOLDER[type];
+  // 어록: 그 말이 주인공 — 출처(제목)는 선택, 별점도 선택
+  const saying = type === '어록';
+  $('#titleLabel').innerHTML = saying ? '출처 <small>책·인터뷰·장면 등, 선택</small>' : '제목 <small>필수</small>';
+  $('#fTitle').placeholder = saying ? '어디에서 만난 말인가요?' : '작품 제목';
+  $('#quoteLabel').innerHTML = saying ? '어록 <small>필수</small>' : '인상 깊은 한 줄';
+  $('#fQuote').rows = saying ? 4 : 2;
+  $('#fQuote').placeholder = saying ? '마음에 남은 말을 그대로 옮겨 적어 보세요' : '마음에 남은 문장이나 대사를 옮겨 적어 보세요';
+  $('#ratingHint').textContent = RATING_OPTIONAL.has(type) ? '선택' : '반 개 단위로 누를 수 있어요';
   renderImgPreview();
 }
 const currentMainType = () => ($('input[name="mainType"]:checked') || {}).value || '도서';
@@ -1204,9 +1247,11 @@ function renderReviewCount() {
 let uploadToken = 0;
 
 function renderImgPreview() {
+  const type = currentMainType();
   $('#imgPreview').innerHTML = coverHTML({
-    mainType: currentMainType(), subCategory: currentSub() || '기타',
-    title: $('#fTitle').value.trim() || '제목', creator: $('#fCreator').value.trim(), imageUrl: state.formImage
+    mainType: type, subCategory: subsOf(type).length ? (currentSub() || '기타') : '',
+    title: $('#fTitle').value.trim() || '제목', creator: $('#fCreator').value.trim(),
+    quote: $('#fQuote').value.trim(), imageUrl: state.formImage
   });
 }
 function setFormImage(url) {
@@ -1411,17 +1456,16 @@ function openForm(record) {
   $('#formError').classList.add('hidden');
   const r = record || {
     mainType: state.tab !== '전체' ? state.tab : '도서',
-    subCategory: state.sub || '소설',
+    subCategory: state.sub,
     title: '', creator: '', date: today(), rating: 0, tags: [], quote: '', review: '', imageUrl: ''
   };
-  $$('input[name="subCategory"]').forEach(i => i.checked = i.value === (r.subCategory || '소설'));
   $('#fTitle').value = r.title;
   $('#fCreator').value = r.creator;
   $('#fDate').value = r.date;
   $('#fTags').value = r.tags.join(', ');
   $('#fQuote').value = r.quote;
   $('#fReview').value = r.review;
-  setMainType(r.mainType);
+  setMainType(r.mainType, r.subCategory || '');
   setFormImage(r.imageUrl);
   setImgStatus('');
   state.formRating = r.rating || 0;
@@ -1444,26 +1488,31 @@ function handleSubmit(ev) {
   ev.preventDefault();
   if (state.uploading) return showFormError('사진을 올리는 중이에요. 잠시만 기다려 주세요.');
   const mainType = currentMainType();
-  const sub = currentSub();
-  const title = $('#fTitle').value.trim();
+  const hasSubs = subsOf(mainType).length > 0;
+  const sub = hasSubs ? currentSub() : '';
+  const quote = $('#fQuote').value.trim();
+  const saying = mainType === '어록';
+  // 어록은 출처(제목)를 비워 두면 그 말의 앞부분을 제목으로 씀
+  const title = $('#fTitle').value.trim() || (saying ? quote.replace(/\s+/g, ' ').slice(0, 40) + (quote.length > 40 ? '…' : '') : '');
   const review = $('#fReview').value.replace(/\s+$/, '');
 
+  if (saying && !quote) return showFormError('어록을 적어 주세요.', $('#fQuote'));
   if (!title) return showFormError('제목을 적어 주세요.', $('#fTitle'));
-  if (mainType === '도서' && !sub) return showFormError('도서 분류를 골라 주세요.', $('#subGroup'));
-  if (!state.formRating) return showFormError('별점을 매겨 주세요.', $('#ratingInput'));
+  if (hasSubs && !subsOf(mainType).includes(sub)) return showFormError(`${mainType} 분류를 골라 주세요.`, $('#subGroup'));
+  if (!state.formRating && !RATING_OPTIONAL.has(mainType)) return showFormError('별점을 매겨 주세요.', $('#ratingInput'));
   if (review.length > REVIEW_MAX) return showFormError(`감상평은 ${REVIEW_MAX.toLocaleString()}자까지 쓸 수 있어요.`, $('#fReview'));
 
   const isEdit = state.editingId !== null;
   const record = {
     id: isEdit ? state.editingId : newId(),
     mainType,
-    subCategory: mainType === '도서' ? sub : '',
+    subCategory: sub,
     title,
     creator: $('#fCreator').value.trim(),
     date: $('#fDate').value || today(),
     rating: state.formRating,
     tags: parseTags($('#fTags').value),
-    quote: $('#fQuote').value.trim(),
+    quote,
     review,
     imageUrl: state.formImage
   };
@@ -1746,8 +1795,8 @@ function bindEvents() {
   // 탭 / 서브 필터
   $('#tabs').addEventListener('click', e => {
     const b = e.target.closest('[data-tab]'); if (!b) return;
+    if (state.tab !== b.dataset.tab) state.sub = '';   // 다른 탭으로 가면 하위 필터 초기화
     state.tab = b.dataset.tab;
-    if (state.tab !== '도서') state.sub = '';
     renderTabs(); renderGrid();
   });
   $('#subChips').addEventListener('click', e => {
@@ -1838,6 +1887,7 @@ function bindEvents() {
   $('#fReview').addEventListener('input', renderReviewCount);
   $('#fTitle').addEventListener('input', renderImgPreview);
   $('#fCreator').addEventListener('input', renderImgPreview);
+  $('#fQuote').addEventListener('input', () => { if (currentMainType() === '어록') renderImgPreview(); });
   $('#recordForm').addEventListener('input', () => $('#formError').classList.add('hidden'));
 
   // 표지 사진
@@ -1878,7 +1928,8 @@ function bindEvents() {
 
 /* ---------- 시작 ---------- */
 (async function init() {
-  buildSubGroup();
+  buildMainTypeGroup();
+  buildSubGroup('도서');
   bindEvents();
   bindCropper();
   const linkCfg = readConnectHash();     // 연결 링크/QR로 열었는지
