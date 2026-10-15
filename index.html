@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>숲숲 · 개인 서고</title>
+<meta name="description" content="읽고, 보고, 오래 머문 것들을 심어 두는 작은 서고">
+<meta name="theme-color" content="#FDFBF7">
+
+<!-- Fonts: Noto Serif KR (Google Fonts) + Pretendard -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          paper: '#FDFBF7',
+          ink: '#2B2A28',
+          sub: '#6B675F',
+          faint: '#9A958B',
+          line: '#E9E3D7',
+          moss: '#4F5D45',
+          mossLight: '#EEF0E8',
+          quote: '#F4F0E6',
+          star: '#C9A24B'
+        },
+        fontFamily: {
+          sans: ['"Pretendard Variable"', 'Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+          serif: ['"Noto Serif KR"', 'serif']
+        }
+      }
+    }
+  };
+</script>
+
+<style>
+  html { -webkit-tap-highlight-color: transparent; }
+  body {
+    background-color: #FDFBF7;
+    /* 아주 옅은 종이 질감 */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .3 0 0 0 0 .2 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    word-break: keep-all; overflow-wrap: anywhere;
+  }
+  ::selection { background: #DDE3D3; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+
+  /* 별점 표시 (반개 지원) */
+  .stars { position: relative; display: inline-block; line-height: 1; white-space: nowrap; }
+  .stars-base { color: #E4DDCD; }
+  .stars-fill { position: absolute; left: 0; top: 0; overflow: hidden; color: #C9A24B; }
+
+  /* 접히는 영역 (서브 필터 / 폼 하위 분류) */
+  .collapse-wrap { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows .3s ease, opacity .25s ease; }
+  .collapse-wrap.open { grid-template-rows: 1fr; opacity: 1; }
+  .collapse-wrap > div { overflow: hidden; min-height: 0; }
+
+  /* 표지 */
+  .cover { container-type: inline-size; }
+  .ph-title { font-size: clamp(11px, 11cqw, 22px); }
+  .cover-shadow { box-shadow: 0 1px 1px rgba(43,42,40,.06), 0 8px 16px -10px rgba(43,42,40,.35); transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease; }
+  .card:hover .cover-shadow, .card:focus-visible .cover-shadow { transform: translateY(-6px) rotate(-.4deg); box-shadow: 0 2px 2px rgba(43,42,40,.05), 0 22px 30px -16px rgba(43,42,40,.45); }
+  .spine { position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(90deg, rgba(0,0,0,.18) 0, rgba(0,0,0,.05) 2.2%, rgba(255,255,255,.22) 3.4%, rgba(255,255,255,0) 7%); }
+  .sheen { position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(115deg, rgba(255,255,255,0) 55%, rgba(255,255,255,.14) 70%, rgba(255,255,255,0) 85%); }
+
+  /* 라디오 칩 */
+  .chip-radio input { position: absolute; opacity: 0; pointer-events: none; }
+  .chip-radio span { display: inline-flex; align-items: center; justify-content: center; border: 1px solid #E9E3D7; background: #fff; color: #6B675F; transition: all .15s ease; cursor: pointer; }
+  .chip-radio:hover span { border-color: #C9C2B3; color: #2B2A28; }
+  .chip-radio input:checked + span { background: #4F5D45; border-color: #4F5D45; color: #fff; }
+  .chip-radio input:focus-visible + span { outline: 2px solid #4F5D45; outline-offset: 2px; }
+
+  /* 모달 */
+  .modal .modal-backdrop { opacity: 0; transition: opacity .2s ease; }
+  .modal .modal-panel { opacity: 0; transform: translateY(28px); transition: opacity .22s ease, transform .28s cubic-bezier(.2,.8,.2,1); }
+  .modal.is-open .modal-backdrop { opacity: 1; }
+  .modal.is-open .modal-panel { opacity: 1; transform: none; }
+  .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+
+  /* 입력 */
+  .field { width: 100%; border: 1px solid #E9E3D7; background: #fff; border-radius: .75rem; padding: .7rem .9rem; font-size: 15px; color: #2B2A28; transition: border-color .15s, box-shadow .15s; }
+  .field::placeholder { color: #B3AEA4; }
+  .field:focus { outline: none; border-color: #4F5D45; box-shadow: 0 0 0 3px rgba(79,93,69,.12); }
+  .label { display: block; font-size: 13px; font-weight: 600; color: #4A4741; margin-bottom: .5rem; }
+  .label small { font-weight: 400; color: #9A958B; margin-left: .25rem; }
+  .btn-soft { display: inline-flex; align-items: center; gap: .4rem; border: 1px solid #E9E3D7; background: #fff; color: #6B675F; font-size: 13px; padding: .5rem .85rem; border-radius: 9999px; cursor: pointer; transition: all .15s; }
+  .btn-soft:hover { color: #2B2A28; border-color: #CFC8B8; }
+
+  .card:focus-visible { outline: none; }
+  .card:focus-visible h3 { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* 표지 자르기 */
+  #cropFrame { touch-action: none; }
+  #cropFrame.dragging { cursor: grabbing; }
+  .crop-grid { background:
+      linear-gradient(to right, transparent calc(33.33% - .5px), rgba(255,255,255,.55) calc(33.33% - .5px), rgba(255,255,255,.55) calc(33.33% + .5px), transparent calc(33.33% + .5px), transparent calc(66.66% - .5px), rgba(255,255,255,.55) calc(66.66% - .5px), rgba(255,255,255,.55) calc(66.66% + .5px), transparent calc(66.66% + .5px)),
+      linear-gradient(to bottom, transparent calc(33.33% - .5px), rgba(255,255,255,.55) calc(33.33% - .5px), rgba(255,255,255,.55) calc(33.33% + .5px), transparent calc(33.33% + .5px), transparent calc(66.66% - .5px), rgba(255,255,255,.55) calc(66.66% - .5px), rgba(255,255,255,.55) calc(66.66% + .5px), transparent calc(66.66% + .5px));
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.6); opacity: 0; transition: opacity .2s; }
+  #cropFrame:hover .crop-grid, #cropFrame.dragging .crop-grid { opacity: 1; }
+  #cropZoom { accent-color: #4F5D45; }
+  #qrBox img, #qrBox canvas { width: 100% !important; height: auto !important; }
+
+  #toast { transition: opacity .25s ease, transform .25s ease; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+
+<body class="text-ink font-sans antialiased min-h-screen">
+
+<!-- ============ 헤더 ============ -->
+<header class="max-w-6xl mx-auto px-4 sm:px-6 pt-8 sm:pt-14 pb-6 sm:pb-10">
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-7 text-center sm:text-left">
+    <div>
+      <div class="flex items-center justify-center sm:justify-start gap-3">
+        <svg class="w-11 h-8 text-moss" viewBox="0 0 44 32" fill="none" aria-hidden="true">
+          <path d="M14 3 7 15h4L4 26h20l-7-11h4L14 3Z" fill="currentColor" opacity=".9"/>
+          <path d="M14 26v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M31 8l-6 10h3.5L22 27h18l-6.5-9H37L31 8Z" fill="currentColor" opacity=".45"/>
+          <path d="M31 27v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".6"/>
+        </svg>
+        <p class="text-[11px] tracking-[0.35em] text-faint uppercase">Personal Archive</p>
+      </div>
+      <h1 class="font-serif text-[44px] sm:text-6xl font-semibold mt-3 tracking-tight leading-none">숲숲</h1>
+      <p class="font-serif text-sub mt-4 text-[15px]">읽고, 보고, 오래 머문 것들을 심어 두는 작은 서고</p>
+
+      <dl id="stats" class="flex justify-center sm:justify-start gap-6 sm:gap-8 mt-6"></dl>
+      <div id="syncRow" class="hidden mt-4 items-center gap-1 justify-center sm:justify-start">
+        <button id="syncStatus" class="inline-flex items-center gap-1.5 text-xs text-faint hover:text-ink transition" title="시트 연동 · 저장 공간"></button>
+        <button id="btnRefresh" class="w-7 h-7 inline-flex items-center justify-center rounded-full text-faint hover:text-ink hover:bg-black/5 transition" title="지금 시트에서 새로 받아오기" aria-label="시트에서 새로고침">
+          <svg id="refreshIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="order-first sm:order-last flex flex-wrap justify-center sm:justify-end gap-2">
+      <button id="btnNew" class="inline-flex items-center gap-1.5 bg-moss text-white text-sm font-medium px-5 py-2.5 rounded-full shadow-[0_6px_16px_-8px_rgba(79,93,69,.8)] hover:bg-[#43503A] active:scale-[.98] transition">
+        <span class="text-base leading-none">+</span> 새 기록 남기기
+      </button>
+      <button id="btnBackup" class="btn-soft !py-2.5 !px-4 !text-sm" title="모든 기록을 JSON 파일로 내려받기">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14"/></svg>
+        <span class="sm:hidden">JSON 백업</span><span class="hidden sm:inline">JSON 백업 다운로드</span>
+      </button>
+      <button id="btnImport" class="btn-soft !py-2.5 !px-4 !text-sm" title="백업 JSON 파일을 불러와 합칩니다">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20V9m0 0l-4 4m4-4l4 4M5 5h14"/></svg>
+        불러오기
+      </button>
+      <button id="btnSync" class="btn-soft !py-2.5 !px-4 !text-sm" title="구글 시트 연동 · 저장 공간">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path stroke-linecap="round" d="M4 9h16M4 15h16M10 3v18"/></svg>
+        시트 연동
+      </button>
+      <input type="file" id="importFile" accept="application/json,.json" class="hidden">
+    </div>
+  </div>
+</header>
+
+<!-- ============ 필터 / 검색 / 정렬 ============ -->
+<section class="sticky top-0 z-20 bg-paper/90 backdrop-blur-md">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="border-y border-line py-3 sm:py-4">
+      <div class="flex flex-col lg:flex-row lg:items-center gap-3 lg:justify-between">
+        <nav id="tabs" class="flex gap-1 overflow-x-auto no-scrollbar -mx-1 px-1" role="tablist" aria-label="분류"></nav>
+        <div class="flex gap-2">
+          <label class="relative flex-1 lg:w-72">
+            <span class="sr-only">검색</span>
+            <svg class="w-4 h-4 text-faint absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M20 20l-3.5-3.5"/></svg>
+            <input id="search" type="search" autocomplete="off" placeholder="제목, 작가, 태그, 본문 검색"
+                   class="w-full bg-white border border-line rounded-full pl-10 pr-4 py-2.5 text-sm placeholder:text-[#B3AEA4] focus:outline-none focus:border-moss focus:ring-4 focus:ring-moss/10 transition">
+          </label>
+          <select id="sort" aria-label="정렬 기준"
+                  class="bg-white border border-line rounded-full px-3.5 py-2.5 text-sm text-sub focus:outline-none focus:border-moss focus:ring-4 focus:ring-moss/10 cursor-pointer">
+            <option value="date-desc">최신 기록순</option>
+            <option value="date-asc">오래된 기록순</option>
+            <option value="title">제목 가나다순</option>
+            <option value="creator">저자/감독 가나다순</option>
+            <option value="rating">별점 높은순</option>
+          </select>
+        </div>
+      </div>
+      <div id="subChipsWrap" class="collapse-wrap">
+        <div><div id="subChips" class="flex flex-wrap gap-1.5 pt-3"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 목록 ============ -->
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-7 sm:py-10">
+  <p id="resultInfo" class="text-xs text-faint mb-5 empty:hidden"></p>
+  <div id="grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-10 sm:gap-x-7"></div>
+  <div id="empty" class="hidden text-center py-20">
+    <svg class="w-20 h-16 mx-auto text-moss/30" viewBox="0 0 44 32" fill="none" aria-hidden="true">
+      <path d="M14 3 7 15h4L4 26h20l-7-11h4L14 3Z" fill="currentColor"/>
+      <path d="M31 8l-6 10h3.5L22 27h18l-6.5-9H37L31 8Z" fill="currentColor" opacity=".6"/>
+    </svg>
+    <p id="emptyTitle" class="font-serif text-xl text-sub mt-5"></p>
+    <p id="emptySub" class="text-sm text-faint mt-2"></p>
+  </div>
+</main>
+
+<footer class="max-w-6xl mx-auto px-4 sm:px-6 pb-12 pt-4">
+  <div class="border-t border-line pt-8 text-xs text-faint text-center leading-relaxed">
+    <p class="font-serif text-sm text-sub">숲숲</p>
+    <p class="mt-2">기록은 이 기기에 저장되고, <b class="font-medium text-sub">시트 연동</b>을 켜면 구글 스프레드시트에도 함께 저장돼요.</p>
+  </div>
+</footer>
+
+<!-- ============ 새 기록 / 수정 모달 ============ -->
+<div id="formModal" class="modal hidden fixed inset-0 z-40" role="dialog" aria-modal="true" aria-labelledby="formTitle">
+  <div class="modal-backdrop absolute inset-0 bg-[#2B2A28]/40 backdrop-blur-[2px]" data-close></div>
+  <div class="absolute inset-0 flex items-end sm:items-center justify-center sm:p-6 pointer-events-none">
+    <div class="modal-panel pointer-events-auto bg-paper w-full sm:max-w-2xl max-h-[94dvh] sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col">
+      <div class="flex items-center justify-between px-5 sm:px-8 py-4 border-b border-line shrink-0">
+        <h2 id="formTitle" class="font-serif text-lg font-semibold">새 기록 남기기</h2>
+        <button type="button" data-close class="w-9 h-9 -mr-2 rounded-full text-faint hover:bg-black/5 hover:text-ink transition" aria-label="닫기">✕</button>
+      </div>
+
+      <form id="recordForm" class="overflow-y-auto overscroll-contain px-5 sm:px-8 py-6 space-y-7 flex-1" novalidate>
+        <!-- 대분류 -->
+        <div>
+          <span class="label">대분류</span>
+          <div id="mainTypeGroup" class="grid grid-cols-3 gap-2" role="radiogroup">
+            <label class="chip-radio relative"><input type="radio" name="mainType" value="도서" checked><span class="w-full py-2.5 rounded-xl text-sm font-medium">도서</span></label>
+            <label class="chip-radio relative"><input type="radio" name="mainType" value="영화"><span class="w-full py-2.5 rounded-xl text-sm font-medium">영화</span></label>
+            <label class="chip-radio relative"><input type="radio" name="mainType" value="드라마"><span class="w-full py-2.5 rounded-xl text-sm font-medium">드라마</span></label>
+          </div>
+          <div id="subWrap" class="collapse-wrap open">
+            <div>
+              <span class="label mt-4">도서 분류</span>
+              <div id="subGroup" class="flex flex-wrap gap-1.5" role="radiogroup"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 표지 + 제목/작가 -->
+        <div class="flex gap-4 sm:gap-5">
+          <div class="shrink-0">
+            <div id="imgPreview" class="cover cover-shadow relative w-[88px] sm:w-[104px] aspect-[3/4] rounded-[6px] overflow-hidden"></div>
+          </div>
+          <div class="flex-1 min-w-0 space-y-4">
+            <div>
+              <label class="label" for="fTitle">제목 <small>필수</small></label>
+              <input id="fTitle" class="field font-serif" type="text" placeholder="작품 제목" maxlength="120">
+            </div>
+            <div>
+              <label class="label" for="fCreator"><span id="creatorLabel">작가</span></label>
+              <input id="fCreator" class="field" type="text" placeholder="이름" maxlength="80">
+            </div>
+          </div>
+        </div>
+
+        <!-- 표지 사진 -->
+        <div>
+          <span class="label">표지 · 포스터 <small>선택</small></span>
+          <div class="flex flex-wrap gap-2">
+            <label class="btn-soft">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linejoin="round" d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+              사진 찍기
+              <input id="fPhotoCam" type="file" accept="image/*" capture="environment" class="hidden">
+            </label>
+            <label class="btn-soft">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path stroke-linejoin="round" d="m4 16 4.5-4.5 4 4 2.5-2.5L20 18"/><circle cx="15.5" cy="9.5" r="1.3"/></svg>
+              앨범에서 고르기
+              <input id="fPhotoPick" type="file" accept="image/*" class="hidden">
+            </label>
+            <button type="button" id="btnImgClear" class="hidden btn-soft !text-[#A2463F]">사진 지우기</button>
+          </div>
+          <input id="fImage" class="field text-sm mt-2" type="url" inputmode="url" placeholder="또는 이미지 주소 붙여넣기 (https://…)">
+          <p id="imgStatus" class="text-xs text-faint mt-2 empty:hidden"></p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="label" for="fDate">기록일자</label>
+            <input id="fDate" class="field" type="date">
+          </div>
+          <div>
+            <span class="label">별점 <small>반 개 단위로 누를 수 있어요</small></span>
+            <div class="flex items-center gap-3 h-[46px]">
+              <div id="ratingInput" class="relative inline-block text-[34px] cursor-pointer select-none touch-none outline-none rounded focus-visible:ring-2 focus-visible:ring-moss/40"
+                   tabindex="0" role="slider" aria-label="별점" aria-valuemin="1" aria-valuemax="5" aria-valuenow="0"></div>
+              <span id="ratingValue" class="text-sm text-sub tabular-nums w-10"></span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="label" for="fTags">태그 <small>쉼표(,)로 구분</small></label>
+          <input id="fTags" class="field" type="text" placeholder="여운, 고전, 문체">
+          <div id="tagPreview" class="flex flex-wrap gap-1.5 mt-2 empty:hidden"></div>
+        </div>
+
+        <div>
+          <label class="label" for="fQuote">인상 깊은 한 줄</label>
+          <textarea id="fQuote" class="field font-serif resize-none leading-relaxed" rows="2" maxlength="1000" placeholder="마음에 남은 문장이나 대사를 옮겨 적어 보세요"></textarea>
+        </div>
+
+        <div>
+          <label class="label" for="fReview">상세 감상평</label>
+          <textarea id="fReview" class="field min-h-[220px] resize-y leading-relaxed" maxlength="45000" placeholder="천천히, 길게 써도 괜찮아요."></textarea>
+          <p id="reviewCount" class="text-right text-[11px] text-faint mt-1.5 tabular-nums"></p>
+        </div>
+
+        <p id="formError" class="hidden text-sm text-[#A2463F]" role="alert"></p>
+      </form>
+
+      <div class="px-5 sm:px-8 pt-4 safe-bottom border-t border-line flex gap-2 justify-end shrink-0">
+        <button type="button" data-close class="px-5 py-2.5 rounded-full text-sm text-sub hover:bg-black/5 transition">취소</button>
+        <button type="submit" id="btnSave" form="recordForm" class="px-6 py-2.5 rounded-full text-sm font-medium bg-moss text-white hover:bg-[#43503A] active:scale-[.98] disabled:opacity-60 disabled:cursor-wait transition">저장하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 상세 보기 모달 ============ -->
+<div id="detailModal" class="modal hidden fixed inset-0 z-30" role="dialog" aria-modal="true" aria-label="기록 상세">
+  <div class="modal-backdrop absolute inset-0 bg-[#2B2A28]/45 backdrop-blur-[2px]" data-close></div>
+  <div class="absolute inset-0 flex items-end sm:items-center justify-center sm:p-6 pointer-events-none">
+    <div class="modal-panel relative pointer-events-auto bg-paper w-full sm:max-w-3xl max-h-[94dvh] sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+      <button type="button" data-close class="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/70 backdrop-blur text-sub hover:text-ink hover:bg-white transition" aria-label="닫기">✕</button>
+      <div id="detailBody" class="overflow-y-auto overscroll-contain flex-1"></div>
+      <div class="px-5 sm:px-10 pt-4 safe-bottom border-t border-line flex items-center gap-2 shrink-0 bg-paper">
+        <button type="button" id="btnDelete" class="px-4 py-2.5 rounded-full text-sm text-[#A2463F] border border-transparent hover:border-[#E8CFCB] hover:bg-[#FBF1EF] transition">기록 삭제</button>
+        <div class="flex-1"></div>
+        <button type="button" id="btnEdit" class="px-4 py-2.5 rounded-full text-sm text-sub border border-line bg-white hover:text-ink transition">수정</button>
+        <button type="button" data-close class="px-5 py-2.5 rounded-full text-sm font-medium bg-ink text-white hover:bg-black transition">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 시트 연동 · 저장 공간 모달 ============ -->
+<div id="syncModal" class="modal hidden fixed inset-0 z-40" role="dialog" aria-modal="true" aria-labelledby="syncTitle">
+  <div class="modal-backdrop absolute inset-0 bg-[#2B2A28]/40 backdrop-blur-[2px]" data-close></div>
+  <div class="absolute inset-0 flex items-end sm:items-center justify-center sm:p-6 pointer-events-none">
+    <div class="modal-panel pointer-events-auto bg-paper w-full sm:max-w-lg max-h-[94dvh] sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col">
+      <div class="flex items-center justify-between px-5 sm:px-8 py-4 border-b border-line shrink-0">
+        <h2 id="syncTitle" class="font-serif text-lg font-semibold">시트 연동 · 저장 공간</h2>
+        <button type="button" data-close class="w-9 h-9 -mr-2 rounded-full text-faint hover:bg-black/5 hover:text-ink transition" aria-label="닫기">✕</button>
+      </div>
+
+      <div class="overflow-y-auto overscroll-contain px-5 sm:px-8 py-6 space-y-5 flex-1">
+        <!-- 저장 공간 -->
+        <section class="rounded-2xl border border-line bg-white px-4 py-4">
+          <div class="flex items-baseline justify-between gap-3">
+            <span class="text-sm font-medium">이 기기 저장 공간</span>
+            <span id="storagePct" class="text-xs text-sub tabular-nums"></span>
+          </div>
+          <div class="mt-2.5 h-1.5 rounded-full bg-line overflow-hidden"><div id="storageBar" class="h-full bg-moss rounded-full transition-all duration-500" style="width:0"></div></div>
+          <p id="storageText" class="text-xs text-faint mt-2.5 leading-relaxed"></p>
+        </section>
+
+        <!-- 다른 기기 연결 (QR / 링크) -->
+        <section id="shareBox" class="hidden rounded-2xl border border-line bg-white px-4 py-4">
+          <p class="text-sm font-medium">다른 기기 연결하기</p>
+          <p class="text-xs text-faint mt-1 leading-relaxed">휴대폰 카메라로 QR을 찍거나 링크를 열면, 입력 없이 바로 연결돼요.</p>
+          <div class="flex items-center gap-4 mt-3">
+            <div id="qrBox" class="w-[120px] shrink-0 aspect-square bg-white p-1.5 rounded-lg border border-line flex items-center justify-center text-center text-[11px] text-faint"></div>
+            <div class="space-y-2 min-w-0">
+              <button id="btnCopyLink" type="button" class="btn-soft">연결 링크 복사</button>
+              <p id="shareNote" class="text-[11px] text-[#B5762F] leading-relaxed"></p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 시트에 못 올린 기록 -->
+        <section id="failedBox" class="hidden rounded-2xl border border-[#EBD3B5] bg-[#FBF5EC] px-4 py-4">
+          <p class="text-sm font-medium text-[#7A4E26]">시트에 올리지 못한 기록 <span id="failedCount"></span>건</p>
+          <ul id="failedList" class="mt-2 space-y-1.5 text-xs text-[#7A4E26]"></ul>
+          <p class="text-xs text-faint mt-2.5">이 기록들은 이 기기에는 그대로 남아 있어요. 내용을 고친 뒤 다시 시도해 주세요.</p>
+          <button type="button" id="btnRetryFailed" class="btn-soft mt-3">다시 시도</button>
+        </section>
+
+        <p class="text-sm text-sub leading-relaxed">시트를 연동하면 기록이 내 구글 스프레드시트에, 표지 사진은 내 구글 드라이브에 저장되어 PC와 휴대폰 어디서 열어도 같은 서고를 볼 수 있어요.</p>
+
+        <details class="rounded-2xl border border-line bg-white px-4 py-3 text-sm text-sub">
+          <summary class="cursor-pointer font-medium text-ink">처음이라면: 설정 방법</summary>
+          <ol class="list-decimal pl-5 mt-3 space-y-1.5 leading-relaxed">
+            <li>새 구글 스프레드시트를 만들어요.</li>
+            <li>[확장 프로그램 → Apps Script]를 열고 <b>Code.gs</b> 내용을 붙여 넣어요.</li>
+            <li>맨 위 <code class="text-moss">SECRET</code>을 나만의 비밀번호로 바꾸고 저장해요.</li>
+            <li>[배포 → 새 배포 → 웹 앱] 실행: <b>나</b> / 액세스: <b>모든 사용자</b> → 배포 → 권한 허용</li>
+            <li>나온 웹 앱 URL과 비밀번호를 아래에 입력해요.</li>
+          </ol>
+        </details>
+
+        <div>
+          <label class="label" for="sUrl">웹 앱 URL</label>
+          <input id="sUrl" class="field" type="url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec">
+        </div>
+        <div>
+          <label class="label" for="sKey">비밀번호 <small>Code.gs의 SECRET</small></label>
+          <input id="sKey" class="field" type="password" autocomplete="off">
+        </div>
+        <p class="text-xs text-faint leading-relaxed">URL과 비밀번호는 이 기기의 브라우저에만 저장돼요. 기기마다 한 번씩 입력해 주세요.</p>
+
+        <div id="syncMsg" class="hidden"></div>
+
+        <div id="syncChoice" class="hidden space-y-2">
+          <button type="button" id="btnMergeUpload" class="w-full px-4 py-3 rounded-xl text-sm font-medium bg-moss text-white hover:bg-[#43503A] transition"></button>
+          <button type="button" id="btnSheetOnly" class="w-full px-4 py-3 rounded-xl text-sm text-sub border border-line bg-white hover:text-ink transition"></button>
+          <p class="text-xs text-faint text-center">걱정된다면 먼저 [JSON 백업 다운로드]를 받아 두세요.</p>
+        </div>
+      </div>
+
+      <div class="px-5 sm:px-8 pt-4 safe-bottom border-t border-line flex items-center gap-2 shrink-0">
+        <button type="button" id="btnDisconnect" class="hidden px-4 py-2.5 rounded-full text-sm text-[#A2463F] hover:bg-[#FBF1EF] transition">연동 해제</button>
+        <div class="flex-1"></div>
+        <button type="button" data-close class="px-5 py-2.5 rounded-full text-sm text-sub hover:bg-black/5 transition">닫기</button>
+        <button type="button" id="btnConnect" class="px-6 py-2.5 rounded-full text-sm font-medium bg-moss text-white hover:bg-[#43503A] disabled:opacity-60 transition">연결하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 표지 자르기 모달 ============ -->
+<div id="cropModal" class="modal hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="cropTitle">
+  <div class="modal-backdrop absolute inset-0 bg-[#1d1c1a]/75"></div>
+  <div class="absolute inset-0 flex items-end sm:items-center justify-center sm:p-6 pointer-events-none">
+    <div class="modal-panel pointer-events-auto bg-paper w-full sm:max-w-md max-h-[96dvh] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col">
+      <div class="px-5 pt-5 pb-2 text-center shrink-0">
+        <h2 id="cropTitle" class="font-serif text-lg font-semibold">표지 자르기</h2>
+        <p class="text-xs text-faint mt-1">사진을 끌어서 위치를, 막대나 두 손가락으로 크기를 맞춰요.</p>
+      </div>
+      <div class="flex-1 min-h-0 flex items-center justify-center px-5 py-3">
+        <div id="cropFrame" class="relative overflow-hidden rounded-[6px] bg-[#E9E3D7] cursor-grab select-none shadow-[0_14px_34px_-14px_rgba(0,0,0,.55)]"
+             style="width:min(64vw,270px,calc((96dvh - 250px) * .75));aspect-ratio:3/4">
+          <canvas id="cropCanvas" class="absolute inset-0 w-full h-full"></canvas>
+          <div class="crop-grid absolute inset-0 pointer-events-none"></div>
+        </div>
+      </div>
+      <div class="px-6 pt-2 flex items-center gap-3 shrink-0">
+        <svg class="w-3.5 h-3.5 text-faint" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+        <input id="cropZoom" type="range" min="1" max="4" step="0.01" value="1" class="flex-1" aria-label="확대">
+        <svg class="w-5 h-5 text-faint" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1.5"/></svg>
+        <button id="cropRotate" type="button" class="btn-soft !px-2.5 ml-1" title="90° 돌리기" aria-label="90도 돌리기">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 1 0 2.34-5.66M4 4v5h5"/></svg>
+        </button>
+      </div>
+      <div class="px-5 pt-4 safe-bottom flex gap-2 justify-end shrink-0">
+        <button id="cropCancel" type="button" class="px-5 py-2.5 rounded-full text-sm text-sub hover:bg-black/5 transition">취소</button>
+        <button id="cropOk" type="button" class="px-6 py-2.5 rounded-full text-sm font-medium bg-moss text-white hover:bg-[#43503A] active:scale-[.98] transition">이대로 쓰기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div id="toast" role="status" aria-live="polite" class="fixed left-1/2 bottom-6 z-50 -translate-x-1/2 translate-y-3 opacity-0 pointer-events-none bg-ink text-white text-sm px-5 py-3 rounded-full shadow-lg max-w-[90vw] text-center"></div>
+
+<script>
+/* =========================================================
+   숲숲 — 개인 서고
+   ========================================================= */
+
+/* ---------- 설정 ---------- */
+const SYNC_KEY = 'soopsoop.sync.v1';                 // 시트 연동 설정 { url, key } — localStorage, 이 기기에만
+const LEGACY_RECORDS_KEY = 'soopsoop.records.v1';    // 예전 버전(localStorage) → IndexedDB로 옮김
+const LEGACY_QUEUE_KEY = 'soopsoop.queue.v1';
+const REVIEW_MAX = 45000;                            // 시트 셀 한도(5만 자)보다 넉넉히 낮게
+const LOCAL_IMAGE_MAX = 40000;                       // 기기에 직접 넣는 사진(data URL) 최대 글자 수
+const SAMPLE_IDS = new Set(['1001', '1002', '1003', '1004', '1005', '1006', '1007']);
+
+const MAIN_TYPES = ['도서', '영화', '드라마'];
+const BOOK_SUBS = ['시', '소설', '그림책', '인문학', '자연과학', '종교·예술', '기타'];
+const CREATOR_LABEL = { '도서': '작가', '영화': '감독', '드라마': '연출' };
+const COVER_TONES = {
+  '시':       ['#EDE8F1', '#5E5470'],
+  '소설':     ['#E6EDEF', '#3F5560'],
+  '그림책':   ['#F6EADB', '#8A5A2E'],
+  '인문학':   ['#EDE7DB', '#5C5240'],
+  '자연과학': ['#E3ECE1', '#3F5A3D'],
+  '종교·예술':['#F2E5E4', '#74424A'],
+  '기타':     ['#ECEAE5', '#55524C'],
+  '영화':     ['#E5E3DF', '#2F2E2B'],
+  '드라마':   ['#E6E9F0', '#3A4562']
+};
+
+/* ---------- 샘플 데이터 ---------- */
+const SAMPLE_RECORDS = [
+  {
+    id: 1001, mainType: '도서', subCategory: '시',
+    title: '하늘과 바람과 별과 시', creator: '윤동주', date: '2026-09-28', rating: 5,
+    tags: ['여운', '고전', '부끄러움'],
+    quote: '죽는 날까지 하늘을 우러러\n한 점 부끄럼이 없기를,',
+    review: '가을이 오면 꼭 한 번은 다시 펼치게 되는 시집.\n\n예전에는 「서시」의 단정함만 보였는데, 이번에는 「자화상」의 우물 속 사나이가 오래 남았다. 미워졌다가, 가엾어졌다가, 다시 그리워지는 마음. 나를 들여다보는 일이 이렇게 여러 번 마음을 바꾸는 일이라는 걸 이제야 조금 안다.\n\n짧은 시들인데 한 편을 읽고 나면 한참을 멈춰 있게 된다. 서두르지 말고 하루에 몇 편씩만.',
+    imageUrl: ''
+  },
+  {
+    id: 1002, mainType: '도서', subCategory: '소설',
+    title: '날개', creator: '이상', date: '2026-08-14', rating: 4,
+    tags: ['문체', '모더니즘', '고전'],
+    quote: '‘박제가 되어 버린 천재’를 아시오?',
+    review: '첫 문장부터 독자를 시험하는 소설. 화자의 목소리가 너무 생생해서, 읽는 내내 그의 좁은 방에 같이 갇혀 있는 기분이었다.\n\n33번지, 해가 들지 않는 방, 아내의 돋보기로 지지는 휴지. 사소한 사물들이 이상하게 반짝인다.\n\n마지막 장면의 외침은 여전히 해석하기 어렵지만, 그 막막함까지 포함해서 좋았다. 문장을 소리 내어 읽어 보고 싶어지는 책.',
+    imageUrl: ''
+  },
+  {
+    id: 1003, mainType: '도서', subCategory: '그림책',
+    title: '피터 래빗 이야기', creator: '베아트릭스 포터', date: '2026-07-03', rating: 4.5,
+    tags: ['다정함', '수채화', '다시읽기'],
+    quote: '엄마는 말했어요. 맥그리거 아저씨네 밭에는 절대 들어가면 안 된다고.',
+    review: '어릴 때는 줄거리만 기억했는데, 다시 보니 그림이 이렇게 섬세했나 싶다. 물기 많은 수채화, 작은 단추 하나까지 정성스럽다.\n\n말 안 듣는 피터를 혼내지 않고 캐모마일 차 한 잔으로 재우는 결말이 좋다. 꾸중보다 회복이 먼저인 이야기.',
+    imageUrl: ''
+  },
+  {
+    id: 1004, mainType: '도서', subCategory: '인문학',
+    title: '월든', creator: '헨리 데이비드 소로', date: '2026-06-20', rating: 5,
+    tags: ['숲', '고요', '삶의태도'],
+    quote: '나는 삶을 의도적으로 살아 보고 싶어서 숲으로 갔다.',
+    review: '이 서고의 이름을 ‘숲숲’으로 지은 이유 중 하나.\n\n소로가 오두막을 짓는 데 든 비용을 센트 단위까지 적어 둔 장을 읽다가 웃었다. 낭만이 아니라 아주 실용적인 실험이었다는 것. 무엇을 덜어내야 삶의 본질이 보이는지 끝없이 계산하는 사람.\n\n전부 동의하지는 않지만, 읽고 나면 하루를 조금 더 천천히, 의도적으로 살고 싶어진다.',
+    imageUrl: ''
+  },
+  {
+    id: 1005, mainType: '도서', subCategory: '자연과학',
+    title: '침묵의 봄', creator: '레이첼 카슨', date: '2026-05-11', rating: 4,
+    tags: ['환경', '고전', '경고'],
+    quote: '새들의 노래가 사라진 봄을 상상해 본 적이 있는가.',
+    review: '과학책인데 첫 장은 거의 한 편의 우화처럼 시작한다. 그 서늘한 도입부 덕분에 이후의 데이터와 사례들이 남의 일처럼 읽히지 않았다.\n\n60여 년 전의 경고가 여전히 유효하다는 사실이 가장 무섭다.',
+    imageUrl: ''
+  },
+  {
+    id: 1006, mainType: '영화', subCategory: '',
+    title: '리틀 포레스트', creator: '임순례', date: '2026-10-05', rating: 4.5,
+    tags: ['계절', '음식', '쉼'],
+    quote: '잠시 멈춰도 괜찮다고, 계절은 늘 제때 돌아온다고.',
+    review: '큰 사건 없이 계절이 한 바퀴 도는 영화. 그런데 그게 이상하게 위로가 된다.\n\n밭에서 뽑은 배추로 끓인 국, 눈 오는 날의 수제비, 아카시아 꽃 튀김. 요리 장면마다 소리가 좋아서 볼륨을 높이고 봤다.\n\n도망치듯 돌아온 고향이 결국 다시 떠날 힘을 주는 곳이 된다는 것. 지친 시기에 다시 보고 싶은 작품.',
+    imageUrl: ''
+  },
+  {
+    id: 1007, mainType: '드라마', subCategory: '',
+    title: '나의 아저씨', creator: '김원석', date: '2026-09-10', rating: 5,
+    tags: ['위로', '어른', '사람'],
+    quote: '편안함에 이르렀나?',
+    review: '16회 내내 무겁고 어두운데, 끝나고 나면 이상하게 따뜻한 드라마.\n\n누군가를 함부로 판단하지 않고 끝까지 지켜봐 주는 어른이 한 명만 있어도 사람은 살아갈 수 있구나. 거창한 구원이 아니라, 퇴근길에 같이 걸어 주는 정도의 다정함.\n\n후계동 사람들이 술잔을 기울이는 장면들이 오래 기억에 남는다. 언젠가 다시 정주행할 것.',
+    imageUrl: ''
+  }
+];
+
+/* ---------- 상태 ---------- */
+const state = {
+  records: [],
+  tab: '전체',       // '전체' | '도서' | '영화' | '드라마'
+  sub: '',
+  q: '',
+  sort: 'date-desc',
+  editingId: null,
+  detailId: null,
+  formRating: 0,
+  formImage: '',
+  uploading: false
+};
+
+/* ---------- 유틸 ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function today() {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+function newId() {
+  const max = state.records.reduce((m, r) => Math.max(m, Number(r.id) || 0), 0);
+  return Math.max(Date.now(), max + 1);
+}
+function parseTags(str) {
+  return [...new Set(String(str).split(/[,，]/).map(t => t.trim().replace(/^#/, '')).filter(Boolean))];
+}
+function fmtDate(d) { return (d || '').replace(/-/g, '. '); }
+function fmtBytes(b) {
+  if (!Number.isFinite(b)) return '-';
+  if (b < 1024) return `${b}B`;
+  if (b < 1024 ** 2) return `${(b / 1024).toFixed(1)}KB`;
+  if (b < 1024 ** 3) return `${(b / 1024 ** 2).toFixed(1)}MB`;
+  return `${(b / 1024 ** 3).toFixed(1)}GB`;
+}
+function categoryLabel(r) {
+  return r.mainType === '도서' && r.subCategory ? `도서 › ${r.subCategory}` : r.mainType;
+}
+function toneOf(r) {
+  const key = r.mainType === '도서' ? (r.subCategory || '기타') : r.mainType;
+  return { key, tone: COVER_TONES[key] || COVER_TONES['기타'] };
+}
+function starsHTML(rating, cls = '') {
+  const pct = Math.max(0, Math.min(5, Number(rating) || 0)) / 5 * 100;
+  return `<span class="stars ${cls}" aria-label="별점 ${rating}점"><span class="stars-base">★★★★★</span><span class="stars-fill" style="width:${pct}%">★★★★★</span></span>`;
+}
+function coverHTML(r) {
+  const { key, tone: [bg, fg] } = toneOf(r);
+  const placeholder = `
+    <div class="absolute inset-0 flex p-[8%]" style="background:${bg};color:${fg}">
+      <div class="flex-1 flex flex-col items-center justify-center text-center px-[6%] border" style="border-color:${fg}2e;box-shadow:inset 0 0 0 3px ${bg},inset 0 0 0 4px ${fg}1f">
+        <span class="text-[10px] tracking-[0.3em] opacity-70">${esc(key)}</span>
+        <span class="ph-title font-serif font-semibold mt-3 leading-snug line-clamp-4">${esc(r.title || '제목 없음')}</span>
+        <span class="w-6 h-px my-3" style="background:${fg}55"></span>
+        <span class="text-[11px] opacity-80 line-clamp-1">${esc(r.creator)}</span>
+      </div>
+    </div>`;
+  const img = r.imageUrl
+    ? `<img src="${esc(r.imageUrl)}" alt="${esc(r.title)} 표지" loading="lazy" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full object-cover" onerror="this.remove()">`
+    : '';
+  const deco = r.mainType === '도서' ? '<div class="spine"></div>' : '<div class="sheen"></div>';
+  return placeholder + img + deco;
+}
+
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.style.opacity = '1'; t.style.transform = 'translate(-50%, 0)';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translate(-50%, 12px)'; }, 2600);
+}
+
+function normalizeRecord(r = {}) {
+  const mainType = MAIN_TYPES.includes(r.mainType) ? r.mainType : '도서';
+  let tags = r.tags;
+  if (typeof tags === 'string') tags = parseTags(tags);
+  if (!Array.isArray(tags)) tags = [];
+  let rating = Math.round(Number(r.rating) * 2) / 2;
+  if (!Number.isFinite(rating)) rating = 0;
+  return {
+    id: r.id ?? newId(),
+    mainType,
+    subCategory: mainType === '도서' ? (BOOK_SUBS.includes(r.subCategory) ? r.subCategory : '기타') : '',
+    title: String(r.title ?? '').trim(),
+    creator: String(r.creator ?? '').trim(),
+    date: /^\d{4}-\d{2}-\d{2}$/.test(r.date) ? r.date : today(),
+    rating: Math.max(0, Math.min(5, rating)),
+    tags: tags.map(t => String(t).trim()).filter(Boolean),
+    quote: String(r.quote ?? ''),
+    review: String(r.review ?? ''),
+    imageUrl: String(r.imageUrl ?? '').trim()
+  };
+}
+
+/* =========================================================
+   이 기기 저장소 — IndexedDB (안 되면 localStorage로 대체)
+   ========================================================= */
+function readJSON(key, fallback) {
+  try { const v = localStorage.getItem(key); return v === null ? fallback : JSON.parse(v); }
+  catch (err) { return fallback; }
+}
+function writeJSON(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+  catch (err) { console.error('[숲숲] localStorage 저장 실패', key, err); return false; }
+}
+
+let dbPromise = null;
+function idb() {
+  if (!dbPromise) {
+    dbPromise = new Promise((resolve, reject) => {
+      if (!('indexedDB' in window)) return reject(new Error('no_indexeddb'));
+      const req = indexedDB.open('soopsoop', 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('kv');
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+      req.onblocked = () => reject(new Error('blocked'));
+    });
+  }
+  return dbPromise;
+}
+const store = {
+  kind: 'indexeddb',
+  async get(key) {
+    const db = await idb();
+    return new Promise((resolve, reject) => {
+      const r = db.transaction('kv').objectStore('kv').get(key);
+      r.onsuccess = () => resolve(r.result);
+      r.onerror = () => reject(r.error);
+    });
+  },
+  async set(key, value) {
+    const db = await idb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('kv', 'readwrite');
+      tx.objectStore('kv').put(value, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
+  }
+};
+function useLocalStorageFallback() {
+  store.kind = 'localStorage';
+  store.get = async key => readJSON('soopsoop.' + key, undefined);
+  store.set = async (key, value) => { if (!writeJSON('soopsoop.' + key, value)) throw new Error('quota'); };
+}
+
+// 쓰기는 순서대로 한 줄로 (마지막 상태가 항상 마지막에 저장되도록)
+let writeChain = Promise.resolve();
+function saveKey(key, value) {
+  writeChain = writeChain
+    .then(() => store.set(key, value))
+    .catch(err => {
+      console.error('[숲숲] 이 기기에 저장 실패', key, err);
+      toast('이 기기에 저장하지 못했어요. JSON 백업을 받아 두세요.');
+    });
+  return writeChain;
+}
+const persist = () => saveKey('records', state.records);
+const saveQueue = () => saveKey('queue', queue);
+const saveFailed = () => saveKey('failed', failed);
+
+async function loadAll() {
+  let records, q, f;
+  try {
+    await idb();
+    [records, q, f] = await Promise.all([store.get('records'), store.get('queue'), store.get('failed')]);
+  } catch (err) {
+    console.warn('[숲숲] IndexedDB를 쓸 수 없어 localStorage로 저장합니다.', err);
+    useLocalStorageFallback();
+    [records, q, f] = await Promise.all([store.get('records'), store.get('queue'), store.get('failed')]);
+  }
+  queue = Array.isArray(q) ? q : [];
+  failed = Array.isArray(f) ? f : [];
+
+  if (Array.isArray(records)) {
+    state.records = records.map(normalizeRecord);
+  } else {
+    // 처음 열었거나 예전 버전(localStorage)에서 옮겨 오는 경우
+    const legacy = readJSON(LEGACY_RECORDS_KEY, null);
+    const legacyQueue = readJSON(LEGACY_QUEUE_KEY, null);
+    state.records = (Array.isArray(legacy) ? legacy : SAMPLE_RECORDS).map(normalizeRecord);
+    if (Array.isArray(legacyQueue) && !queue.length) queue = legacyQueue;
+    persist(); saveQueue();
+    await writeChain;
+    if (Array.isArray(legacy) && store.kind === 'indexeddb') {
+      try { localStorage.removeItem(LEGACY_RECORDS_KEY); localStorage.removeItem(LEGACY_QUEUE_KEY); } catch (err) {}
+    }
+  }
+  // 브라우저에게 "이 저장 공간은 지우지 말아 달라"고 요청 (허용 여부는 브라우저가 결정)
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (err) {}
+}
+
+async function getStorageInfo() {
+  const recordsBytes = new Blob([JSON.stringify(state.records)]).size;
+  let usage = recordsBytes, quota = store.kind === 'localStorage' ? 5 * 1024 ** 2 : undefined, persisted = false;
+  try {
+    if (store.kind === 'indexeddb' && navigator.storage && navigator.storage.estimate) {
+      const est = await navigator.storage.estimate();
+      if (est.usage) usage = est.usage;
+      if (est.quota) quota = est.quota;
+    }
+    if (navigator.storage && navigator.storage.persisted) persisted = await navigator.storage.persisted();
+  } catch (err) {}
+  return { usage, quota, recordsBytes, persisted };
+}
+
+/* ---------- 기록 저장/삭제 (공개 함수) ---------- */
+/** 기록 1건을 저장(신규 추가 또는 같은 id 덮어쓰기)하고, 연동 중이면 시트로도 전송 */
+function saveRecordToStorage(record) {
+  const rec = normalizeRecord(record);
+  const i = state.records.findIndex(r => String(r.id) === String(rec.id));
+  if (i >= 0) state.records[i] = rec; else state.records.push(rec);
+  persist();
+  enqueue({ action: 'upsert', record: rec });
+  return rec;
+}
+
+function deleteRecordFromStorage(id) {
+  state.records = state.records.filter(r => String(r.id) !== String(id));
+  persist();
+  enqueue({ action: 'delete', id });
+}
+
+/* =========================================================
+   구글 시트 동기화
+   - 시트가 원본. 변경은 큐에 쌓아 순서대로 전송
+   - 연결 문제(네트워크/비밀번호)면 멈추고 나중에 재시도
+   - 기록 자체의 문제(예: 칸 글자 수 초과)면 '못 올린 기록'으로 빼 두고 다음 기록 계속 전송
+   ========================================================= */
+let syncConfig = readJSON(SYNC_KEY, null);
+let queue = [];
+let failed = [];   // [{ op, error, at }]
+const sync = { status: '', lastPull: 0, writeVersion: 0, flushing: null, lastError: null };
+const isSyncOn = () => !!(syncConfig && syncConfig.url && syncConfig.key);
+const STOP_CODES = new Set(['network', 'timeout', 'bad_response', 'unauthorized', 'secret_not_set']);
+
+async function api(action, payload = {}, cfg = syncConfig) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), action === 'uploadImage' ? 60000 : 25000);
+  let res;
+  try {
+    res = await fetch(cfg.url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },   // 사전 요청(CORS preflight) 없이 Apps Script 호출
+      body: JSON.stringify({ action, key: cfg.key, ...payload }),
+      signal: ctrl.signal
+    });
+  } catch (err) {
+    const code = err.name === 'AbortError' ? 'timeout' : 'network';
+    throw Object.assign(new Error(code), { code });
+  } finally {
+    clearTimeout(timer);
+  }
+  let data;
+  try { data = await res.json(); }
+  catch (err) { throw Object.assign(new Error('bad_response'), { code: 'bad_response' }); }
+  if (!data.ok) throw Object.assign(new Error(data.error || 'error'), { code: data.error });
+  return data;
+}
+
+function syncErrorText(err) {
+  const code = err && err.code;
+  const msg = String(err && err.message || '');
+  if (/50000|50,000/.test(msg)) return '글자 수가 시트 한 칸의 한도(5만 자)를 넘었어요.';
+  return ({
+    unauthorized:   '비밀번호가 Code.gs의 SECRET과 달라요.',
+    secret_not_set: 'Code.gs 맨 위의 SECRET을 먼저 나만의 비밀번호로 바꾸고, 새 버전으로 배포해 주세요.',
+    unknown_action: 'Code.gs가 최신 버전인지 확인해 주세요. (고친 뒤에는 새 버전으로 다시 배포)',
+    bad_image:      '사진 형식을 읽지 못했어요.',
+    timeout:        '시트 응답이 너무 늦어요. 잠시 뒤 다시 시도해 주세요.',
+    network:        '시트에 연결하지 못했어요. 인터넷 연결과 URL을 확인해 주세요.',
+    bad_response:   '시트에 연결하지 못했어요. 웹 앱 URL(…/exec)과 배포 설정(액세스: 모든 사용자)을 확인해 주세요.'
+  })[code] || `시트 오류: ${msg || '알 수 없음'}`;
+}
+
+function enqueue(op) {
+  if (!isSyncOn()) return;
+  queue.push(op);
+  saveQueue();
+  sync.writeVersion++;
+  flushQueue();
+}
+
+const opPayload = op => op.action === 'delete' ? { id: op.id }
+                      : op.action === 'bulk'   ? { records: op.records }
+                      : { record: op.record };
+const opIds = op => op.action === 'delete' ? [String(op.id)]
+                  : op.action === 'bulk'   ? op.records.map(r => String(r.id))
+                  : [String(op.record.id)];
+
+function clearFailedFor(op) {
+  const ids = new Set(opIds(op));
+  const before = failed.length;
+  failed = failed.filter(f => !ids.has(opIds(f.op)[0]));
+  if (failed.length !== before) saveFailed();
+}
+
+/** 쌓인 변경 사항을 순서대로 전송. 연결 문제로 멈추면 false */
+function flushQueue() {
+  if (!isSyncOn()) return Promise.resolve(true);
+  if (sync.flushing) return sync.flushing.then(ok => ok && queue.length ? flushQueue() : ok);
+  if (!queue.length) return Promise.resolve(true);
+  sync.flushing = (async () => {
+    setSyncStatus('syncing');
+    while (queue.length) {
+      let op = queue[0];
+      try {
+        await api(op.action, opPayload(op));
+        queue.shift();
+        clearFailedFor(op);
+      } catch (err) {
+        if (STOP_CODES.has(err.code)) { setSyncStatus('error', err); return false; }
+        queue.shift();
+        if (op.action === 'bulk' && op.records.length > 1) {
+          // 묶음 중 어느 기록이 문제인지 모르니 한 건씩 나눠 다시 시도
+          queue.unshift(...op.records.map(record => ({ action: 'upsert', record })));
+        } else {
+          if (op.action === 'bulk') op = { action: 'upsert', record: op.records[0] };
+          const id = opIds(op)[0];
+          failed = failed.filter(f => opIds(f.op)[0] !== id);
+          failed.push({ op, error: syncErrorText(err), at: Date.now() });
+          saveFailed();
+        }
+      }
+      saveQueue();
+    }
+    setSyncStatus('ok');
+    return true;
+  })().finally(() => { sync.flushing = null; });
+  return sync.flushing;
+}
+
+/** 시트의 최신 기록을 받아와 이 기기의 사본을 갱신 */
+async function pullFromSheet() {
+  if (!isSyncOn()) return;
+  if (!(await flushQueue())) return;
+  const version = sync.writeVersion;
+  setSyncStatus('syncing');
+  try {
+    const data = await api('list');
+    if (version !== sync.writeVersion || queue.length) return pullFromSheet(); // 받는 사이에 새 변경 → 보내고 다시
+    const sheetIds = new Set(data.records.map(r => String(r.id)));
+    // 시트에 못 올린 기록은 이 기기에서 사라지지 않게 함께 보관
+    const keep = failed.filter(f => f.op.action === 'upsert' && !sheetIds.has(String(f.op.record.id))).map(f => f.op.record);
+    state.records = [...data.records, ...keep].map(normalizeRecord);
+    persist();
+    sync.lastPull = Date.now();
+    render();
+    if (state.detailId !== null && !state.records.some(r => String(r.id) === String(state.detailId))) closeModal($('#detailModal'));
+    setSyncStatus('ok');
+  } catch (err) {
+    setSyncStatus('error', err);
+  }
+}
+
+function setSyncStatus(status, err) {
+  sync.status = status;
+  if (status === 'error') {
+    const first = sync.lastError === null;
+    sync.lastError = err;
+    if (first) toast(syncErrorText(err));
+  } else if (status === 'ok') {
+    sync.lastError = null;
+  }
+  const el = $('#syncStatus');
+  const row = $('#syncRow');
+  $('#refreshIcon').classList.toggle('animate-spin', status === 'syncing');
+  if (!isSyncOn()) { row.classList.add('hidden'); row.classList.remove('flex'); return; }
+  row.classList.remove('hidden'); row.classList.add('flex');
+  let [color, text] = {
+    syncing: ['bg-[#B9B3A6] animate-pulse', '시트와 동기화 중…'],
+    ok:      ['bg-[#6E8B5E]', '시트와 동기화됨'],
+    error:   ['bg-[#C9893F]', queue.length ? `시트 연결 안 됨 · 보낼 기록 ${queue.length}건 대기` : '시트 연결 안 됨']
+  }[status] || ['bg-[#B9B3A6]', '시트 연동'];
+  if (failed.length && status !== 'syncing') { color = 'bg-[#C9893F]'; text += ` · 못 올린 기록 ${failed.length}건`; }
+  el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${color}"></span>${text}`;
+  el.title = status === 'error' ? syncErrorText(err || sync.lastError) : '시트 연동 · 저장 공간';
+}
+
+/* =========================================================
+   목록 렌더링
+   ========================================================= */
+function getVisibleRecords() {
+  const terms = state.q.trim().toLowerCase().split(/\s+/).filter(Boolean).map(t => t.replace(/^#/, ''));
+  const list = state.records.filter(r => {
+    if (state.tab !== '전체' && r.mainType !== state.tab) return false;
+    if (state.tab === '도서' && state.sub && r.subCategory !== state.sub) return false;
+    if (terms.length) {
+      const hay = [r.title, r.creator, r.tags.join(' '), r.quote, r.review].join(' ').toLowerCase();
+      if (!terms.every(t => hay.includes(t))) return false;
+    }
+    return true;
+  });
+  const byDate = (a, b) => a.date.localeCompare(b.date) || (Number(a.id) - Number(b.id));
+  const sorters = {
+    'date-desc': (a, b) => byDate(b, a),
+    'date-asc':  (a, b) => byDate(a, b),
+    'title':     (a, b) => a.title.localeCompare(b.title, 'ko') || byDate(b, a),
+    'creator':   (a, b) => a.creator.localeCompare(b.creator, 'ko') || a.title.localeCompare(b.title, 'ko'),
+    'rating':    (a, b) => b.rating - a.rating || byDate(b, a)
+  };
+  return list.sort(sorters[state.sort] || sorters['date-desc']);
+}
+
+function renderTabs() {
+  const counts = { '전체': state.records.length };
+  MAIN_TYPES.forEach(t => counts[t] = state.records.filter(r => r.mainType === t).length);
+  const tabs = [['전체', '전체보기'], ['도서', '도서 전체'], ['영화', '영화'], ['드라마', '드라마']];
+  $('#tabs').innerHTML = tabs.map(([val, label]) => {
+    const on = state.tab === val;
+    return `<button role="tab" aria-selected="${on}" data-tab="${val}"
+      class="shrink-0 px-4 py-2 rounded-full text-sm transition ${on ? 'bg-ink text-white shadow-sm' : 'text-sub hover:bg-black/5 hover:text-ink'}">
+      ${label}<span class="ml-1.5 text-[11px] ${on ? 'text-white/60' : 'text-faint'}">${counts[val]}</span></button>`;
+  }).join('');
+
+  const books = state.records.filter(r => r.mainType === '도서');
+  $('#subChips').innerHTML = BOOK_SUBS.map(s => {
+    const on = state.sub === s;
+    const n = books.filter(r => r.subCategory === s).length;
+    const fg = COVER_TONES[s][1];
+    return `<button data-sub="${esc(s)}" aria-pressed="${on}"
+      class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] border transition ${on ? 'bg-mossLight border-moss/40 text-moss font-medium' : 'border-line bg-white/60 text-sub hover:text-ink hover:border-[#CFC8B8]'}">
+      <span class="w-1.5 h-1.5 rounded-full" style="background:${fg};opacity:.7"></span>${esc(s)}<span class="text-[11px] ${on ? 'text-moss/70' : 'text-faint'}">${n}</span></button>`;
+  }).join('');
+  $('#subChipsWrap').classList.toggle('open', state.tab === '도서');
+}
+
+function cardHTML(r) {
+  const fg = toneOf(r).tone[1];
+  return `
+    <article class="card group cursor-pointer outline-none" data-id="${esc(r.id)}" tabindex="0" role="button" aria-label="${esc(r.title)} 상세 보기">
+      <div class="cover cover-shadow relative aspect-[3/4] rounded-[6px] overflow-hidden">
+        ${coverHTML(r)}
+        ${r.quote ? `<div class="absolute inset-0 hidden sm:flex items-end p-4 bg-gradient-to-t from-black/75 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition duration-300">
+          <p class="font-serif text-white text-[13px] leading-relaxed line-clamp-5 whitespace-pre-line">“${esc(r.quote)}”</p></div>` : ''}
+      </div>
+      <div class="mt-3.5">
+        <p class="flex items-center gap-1.5 text-[11px] text-faint">
+          <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${fg};opacity:.65"></span>
+          <span class="truncate">${esc(categoryLabel(r))}</span>
+        </p>
+        <h3 class="font-serif text-[15px] sm:text-base font-medium leading-snug line-clamp-2 mt-1">${esc(r.title)}</h3>
+        <p class="text-xs text-sub truncate mt-0.5">${esc(r.creator) || '&nbsp;'}</p>
+        <div class="flex items-center gap-1.5 mt-1.5">
+          <span class="text-[13px]">${starsHTML(r.rating)}</span>
+          <span class="text-[11px] text-faint tabular-nums">${r.rating ? r.rating.toFixed(1) : ''}</span>
+        </div>
+      </div>
+    </article>`;
+}
+
+function renderGrid() {
+  const list = getVisibleRecords();
+  let html = '';
+  if (state.sort.startsWith('date') && list.length) {
+    // 날짜순일 때는 달마다 묶어서 보여 주기
+    let current = null;
+    const counts = list.reduce((m, r) => (m[r.date.slice(0, 7)] = (m[r.date.slice(0, 7)] || 0) + 1, m), {});
+    list.forEach(r => {
+      const ym = r.date.slice(0, 7);
+      if (ym !== current) {
+        current = ym;
+        const [y, m] = ym.split('-');
+        html += `
+          <div class="col-span-full flex items-baseline gap-3 -mb-4 ${html ? 'mt-4' : ''}">
+            <span class="font-serif text-xl sm:text-2xl font-semibold">${Number(m)}월</span>
+            <span class="text-[11px] tracking-[0.25em] text-faint">${y}</span>
+            <span class="flex-1 h-px bg-line translate-y-[-4px]"></span>
+            <span class="text-[11px] text-faint">${counts[ym]}편</span>
+          </div>`;
+      }
+      html += cardHTML(r);
+    });
+  } else {
+    html = list.map(cardHTML).join('');
+  }
+  $('#grid').innerHTML = html;
+
+  $('#empty').classList.toggle('hidden', list.length > 0);
+  $('#emptyTitle').textContent = state.records.length ? '찾는 기록이 이 숲에는 없어요' : '아직 이 숲에는 아무것도 자라지 않았어요';
+  $('#emptySub').textContent = state.records.length
+    ? '검색어나 분류를 바꿔 보세요.'
+    : '[+ 새 기록 남기기]로 첫 나무를 심어 보세요.';
+
+  const filtered = state.tab !== '전체' || state.q.trim();
+  $('#resultInfo').textContent = filtered ? `${list.length}편의 기록` : '';
+}
+
+function renderStats() {
+  const year = today().slice(0, 4);
+  const thisYear = state.records.filter(r => r.date.startsWith(year)).length;
+  const rated = state.records.filter(r => r.rating);
+  const avg = rated.length ? (rated.reduce((s, r) => s + r.rating, 0) / rated.length).toFixed(1) : '-';
+  const item = (n, label) => `<div><dd class="font-serif text-2xl font-semibold leading-none">${n}</dd><dt class="text-[11px] text-faint mt-1.5">${label}</dt></div>`;
+  $('#stats').innerHTML =
+    item(state.records.length, '모든 기록') +
+    item(thisYear, `${year}년`) +
+    item(`<span class="text-star text-lg align-[2px]">★</span>${avg}`, '평균 별점');
+}
+
+function render() { renderTabs(); renderGrid(); renderStats(); }
+
+/* =========================================================
+   모달 공통
+   ========================================================= */
+function openModal(el) {
+  el.classList.remove('hidden');
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('is-open')));
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(el) {
+  if (!el || el.classList.contains('hidden')) return;
+  el.classList.remove('is-open');
+  setTimeout(() => {
+    el.classList.add('hidden');
+    if (!$$('.modal').some(m => !m.classList.contains('hidden'))) document.body.style.overflow = '';
+  }, 220);
+  if (el.id === 'detailModal') { resetDeleteBtn(); state.detailId = null; }
+}
+
+/* =========================================================
+   상세 보기
+   ========================================================= */
+function openDetail(id) {
+  const r = state.records.find(x => String(x.id) === String(id));
+  if (!r) return;
+  state.detailId = r.id;
+  const { tone: [bg, fg] } = toneOf(r);
+  const badge = r.mainType === '도서' && r.subCategory
+    ? `도서 <span class="mx-1 opacity-50">›</span> ${esc(r.subCategory)}` : esc(r.mainType);
+
+  $('#detailBody').innerHTML = `
+    <div class="relative h-40 sm:h-48 overflow-hidden" style="background:${bg}">
+      ${r.imageUrl ? `<img src="${esc(r.imageUrl)}" alt="" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-60" onerror="this.remove()">` : ''}
+      <svg class="absolute -right-4 bottom-0 w-56 h-40" viewBox="0 0 44 32" fill="${fg}" opacity=".07" aria-hidden="true"><path d="M14 3 7 15h4L4 26h20l-7-11h4L14 3Z"/><path d="M31 8l-6 10h3.5L22 27h18l-6.5-9H37L31 8Z"/></svg>
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-paper"></div>
+    </div>
+
+    <div class="px-5 sm:px-10 pb-10">
+      <div class="relative -mt-28 sm:-mt-32 flex flex-col sm:flex-row gap-6 sm:gap-8 items-center sm:items-end">
+        <div class="cover cover-shadow relative w-36 sm:w-44 aspect-[3/4] shrink-0 rounded-[6px] overflow-hidden">
+          ${coverHTML(r)}
+        </div>
+        <div class="flex-1 min-w-0 text-center sm:text-left sm:pb-1">
+          <span class="inline-flex items-center px-3 py-1 rounded-full bg-mossLight text-moss text-xs font-medium">${badge}</span>
+          <h2 class="font-serif text-2xl sm:text-[32px] font-semibold leading-snug mt-3">${esc(r.title)}</h2>
+          ${r.creator ? `<p class="text-sub mt-2 text-[15px]"><span class="text-faint text-sm mr-1">${CREATOR_LABEL[r.mainType]}</span>${esc(r.creator)}</p>` : ''}
+          <div class="mt-3 flex items-center gap-2 justify-center sm:justify-start">
+            <span class="text-xl">${starsHTML(r.rating)}</span>
+            <span class="text-sm text-sub tabular-nums">${r.rating ? r.rating.toFixed(1) : '-'}</span>
+            <span class="text-line">|</span>
+            <span class="text-xs text-faint">${fmtDate(r.date)}</span>
+          </div>
+        </div>
+      </div>
+
+      ${r.tags.length ? `<div class="flex flex-wrap gap-1.5 mt-6 justify-center sm:justify-start">
+        ${r.tags.map(t => `<button data-tag="${esc(t)}" class="text-xs px-2.5 py-1 rounded-full border border-line bg-white text-sub hover:text-moss hover:border-moss/40 transition">#${esc(t)}</button>`).join('')}
+      </div>` : ''}
+
+      ${r.quote ? `
+      <figure class="relative mt-9 border-l-[3px] border-moss bg-quote rounded-r-2xl pl-6 pr-5 sm:pl-8 sm:pr-7 pt-7 pb-6">
+        <span class="absolute top-1 left-4 sm:left-6 font-serif text-5xl leading-none text-moss/25 select-none" aria-hidden="true">“</span>
+        <blockquote class="font-serif text-[17px] sm:text-lg leading-relaxed text-ink whitespace-pre-wrap">${esc(r.quote)}</blockquote>
+      </figure>` : ''}
+
+      <section class="mt-10">
+        <div class="flex items-center gap-3 mb-4">
+          <h3 class="text-[11px] tracking-[0.3em] text-faint uppercase">Review · 감상</h3>
+          <span class="flex-1 h-px bg-line"></span>
+          ${r.review ? `<span class="text-[11px] text-faint tabular-nums">${r.review.length.toLocaleString()}자</span>` : ''}
+        </div>
+        ${r.review
+          ? `<div class="whitespace-pre-wrap leading-relaxed text-[15.5px] sm:text-base text-[#3A3833] max-w-prose">${esc(r.review)}</div>`
+          : `<p class="text-sm text-faint">아직 감상평이 없어요. [수정]을 눌러 남겨 보세요.</p>`}
+      </section>
+    </div>`;
+
+  $('#detailBody').scrollTop = 0;
+  openModal($('#detailModal'));
+}
+
+let deleteArmTimer;
+function resetDeleteBtn() {
+  const b = $('#btnDelete');
+  clearTimeout(deleteArmTimer);
+  b.dataset.armed = '';
+  b.textContent = '기록 삭제';
+  b.classList.remove('bg-[#A2463F]', 'text-white', 'hover:bg-[#8E3B35]');
+}
+function handleDelete() {
+  const b = $('#btnDelete');
+  if (!b.dataset.armed) {
+    b.dataset.armed = '1';
+    b.textContent = '한 번 더 누르면 삭제돼요';
+    b.classList.add('bg-[#A2463F]', 'text-white', 'hover:bg-[#8E3B35]');
+    deleteArmTimer = setTimeout(resetDeleteBtn, 3000);
+    return;
+  }
+  const r = state.records.find(x => String(x.id) === String(state.detailId));
+  deleteRecordFromStorage(state.detailId);
+  closeModal($('#detailModal'));
+  render();
+  toast(`『${r ? r.title : '기록'}』을(를) 서고에서 뺐어요`);
+}
+
+/* =========================================================
+   새 기록 / 수정 폼
+   ========================================================= */
+function buildSubGroup() {
+  $('#subGroup').innerHTML = BOOK_SUBS.map(s => `
+    <label class="chip-radio relative"><input type="radio" name="subCategory" value="${esc(s)}">
+      <span class="px-3.5 py-2 rounded-full text-[13px]">${esc(s)}</span></label>`).join('');
+}
+
+function setMainType(type) {
+  $$('input[name="mainType"]').forEach(i => i.checked = i.value === type);
+  $('#subWrap').classList.toggle('open', type === '도서');
+  $$('input[name="subCategory"]').forEach(i => i.tabIndex = type === '도서' ? 0 : -1);
+  $('#creatorLabel').textContent = CREATOR_LABEL[type];
+  $('#fCreator').placeholder = { '도서': '작가 이름', '영화': '감독 이름', '드라마': '연출자 이름' }[type];
+  renderImgPreview();
+}
+const currentMainType = () => ($('input[name="mainType"]:checked') || {}).value || '도서';
+const currentSub = () => ($('input[name="subCategory"]:checked') || {}).value || '';
+
+function renderRatingInput(preview) {
+  const v = preview ?? state.formRating;
+  $('#ratingInput').innerHTML = starsHTML(v);
+  $('#ratingInput').setAttribute('aria-valuenow', state.formRating);
+  $('#ratingValue').textContent = v ? v.toFixed(1) : '';
+}
+function ratingFromEvent(e) {
+  const rect = $('#ratingInput').getBoundingClientRect();
+  const frac = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  return Math.max(1, Math.ceil(frac * 10) / 2);
+}
+
+function renderTagPreview() {
+  const tags = parseTags($('#fTags').value);
+  $('#tagPreview').innerHTML = tags.map(t => `<span class="text-xs px-2.5 py-1 rounded-full bg-mossLight text-moss">#${esc(t)}</span>`).join('');
+}
+
+function renderReviewCount() {
+  const n = $('#fReview').value.length;
+  const el = $('#reviewCount');
+  el.textContent = `${n.toLocaleString()} / ${REVIEW_MAX.toLocaleString()}자`;
+  el.className = 'text-right text-[11px] mt-1.5 tabular-nums ' +
+    (n >= REVIEW_MAX ? 'text-[#A2463F] font-medium' : n > REVIEW_MAX * 0.9 ? 'text-[#B5762F]' : 'text-faint');
+  if (n >= REVIEW_MAX) el.textContent += ' · 더 쓰려면 기록을 나눠 주세요';
+}
+
+/* ---------- 표지 사진 ---------- */
+let uploadToken = 0;
+
+function renderImgPreview() {
+  $('#imgPreview').innerHTML = coverHTML({
+    mainType: currentMainType(), subCategory: currentSub() || '기타',
+    title: $('#fTitle').value.trim() || '제목', creator: $('#fCreator').value.trim(), imageUrl: state.formImage
+  });
+}
+function setFormImage(url) {
+  state.formImage = url || '';
+  const isData = state.formImage.startsWith('data:');
+  $('#fImage').value = isData ? '' : state.formImage;
+  $('#fImage').placeholder = isData ? '찍은 사진이 들어가 있어요' : '또는 이미지 주소 붙여넣기 (https://…)';
+  $('#btnImgClear').classList.toggle('hidden', !state.formImage);
+  renderImgPreview();
+}
+function setImgStatus(text, tone = 'faint') {
+  const el = $('#imgStatus');
+  el.textContent = text || '';
+  el.className = 'text-xs mt-2 empty:hidden ' + (tone === 'warn' ? 'text-[#B5762F]' : tone === 'ok' ? 'text-moss' : 'text-faint');
+}
+function setUploading(on) {
+  state.uploading = on;
+  const b = $('#btnSave');
+  b.disabled = on;
+  b.textContent = on ? '사진 올리는 중…' : '저장하기';
+}
+
+function loadImage(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decode')); };
+    img.src = url;
+  });
+}
+/* ---------- 표지 자르기 (3:4) ---------- */
+const crop = { src: null, base: null, rot: 0, zoom: 1, cx: .5, cy: .5, resolve: null, pointers: new Map(), pinch: null };
+
+function rotatedSource(img, rot) {
+  if (!rot) return img;
+  const w = img.naturalWidth, h = img.naturalHeight;
+  const c = document.createElement('canvas');
+  c.width = rot % 180 ? h : w;
+  c.height = rot % 180 ? w : h;
+  const ctx = c.getContext('2d');
+  ctx.translate(c.width / 2, c.height / 2);
+  ctx.rotate(rot * Math.PI / 180);
+  ctx.drawImage(img, -w / 2, -h / 2);
+  return c;
+}
+const srcW = s => s.naturalWidth || s.width;
+const srcH = s => s.naturalHeight || s.height;
+
+/** 지금 틀 안에 보이는 부분 (원본 사진 기준 좌표) */
+function cropRect() {
+  const W = srcW(crop.src), H = srcH(crop.src);
+  // 배율 1 = 사진 안에 들어가는 가장 큰 3:4 영역
+  const bw = W / H > 3 / 4 ? H * 3 / 4 : W;
+  const bh = bw * 4 / 3;
+  const vw = bw / crop.zoom, vh = bh / crop.zoom;
+  crop.cx = Math.min(Math.max(crop.cx, vw / 2 / W), 1 - vw / 2 / W);
+  crop.cy = Math.min(Math.max(crop.cy, vh / 2 / H), 1 - vh / 2 / H);
+  return { sx: crop.cx * W - vw / 2, sy: crop.cy * H - vh / 2, sw: vw, sh: vh };
+}
+function drawCrop(canvas, w, h) {
+  const { sx, sy, sw, sh } = cropRect();
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(crop.src, sx, sy, sw, sh, 0, 0, w, h);
+  return canvas;
+}
+function renderCrop() {
+  const frame = $('#cropFrame');
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  drawCrop($('#cropCanvas'), Math.round(frame.clientWidth * dpr), Math.round(frame.clientHeight * dpr));
+  $('#cropZoom').value = crop.zoom;
+}
+function setCropZoom(z) {
+  crop.zoom = Math.min(4, Math.max(1, z));
+  renderCrop();
+}
+
+/** 사진을 받아 자르기 화면을 띄우고, [이대로 쓰기]면 잘린 사진 캔버스를 만드는 함수를 돌려줌 (취소면 null) */
+function openCropper(img) {
+  crop.base = img; crop.rot = 0; crop.src = img;
+  crop.zoom = 1; crop.cx = .5; crop.cy = .5;
+  crop.pointers.clear(); crop.pinch = null;
+  openModal($('#cropModal'));
+  requestAnimationFrame(() => requestAnimationFrame(renderCrop));
+  return new Promise(resolve => { crop.resolve = resolve; });
+}
+function finishCrop(ok) {
+  if (!crop.resolve) return;
+  const resolve = crop.resolve;
+  crop.resolve = null;
+  if (ok) {
+    const snapshot = { src: crop.src, zoom: crop.zoom, cx: crop.cx, cy: crop.cy };
+    resolve(maxH => {
+      Object.assign(crop, snapshot);
+      const h = Math.max(1, Math.round(Math.min(maxH, cropRect().sh)));   // 원본보다 키우지 않음
+      return drawCrop(document.createElement('canvas'), Math.round(h * 3 / 4), h);
+    });
+  } else {
+    resolve(null);
+  }
+  closeModal($('#cropModal'));
+}
+
+function bindCropper() {
+  const frame = $('#cropFrame');
+  frame.addEventListener('pointerdown', e => {
+    frame.setPointerCapture(e.pointerId);
+    crop.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    frame.classList.add('dragging');
+    if (crop.pointers.size === 2) {
+      const [a, b] = [...crop.pointers.values()];
+      crop.pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y), zoom: crop.zoom };
+    }
+  });
+  frame.addEventListener('pointermove', e => {
+    const prev = crop.pointers.get(e.pointerId);
+    if (!prev) return;
+    const cur = { x: e.clientX, y: e.clientY };
+    crop.pointers.set(e.pointerId, cur);
+    if (crop.pointers.size >= 2 && crop.pinch) {
+      const [a, b] = [...crop.pointers.values()];
+      setCropZoom(crop.pinch.zoom * Math.hypot(a.x - b.x, a.y - b.y) / (crop.pinch.dist || 1));
+      return;
+    }
+    const { sw, sh } = cropRect();
+    crop.cx -= (cur.x - prev.x) * (sw / frame.clientWidth) / srcW(crop.src);
+    crop.cy -= (cur.y - prev.y) * (sh / frame.clientHeight) / srcH(crop.src);
+    renderCrop();
+  });
+  const end = e => {
+    crop.pointers.delete(e.pointerId);
+    if (crop.pointers.size < 2) crop.pinch = null;
+    if (!crop.pointers.size) frame.classList.remove('dragging');
+  };
+  frame.addEventListener('pointerup', end);
+  frame.addEventListener('pointercancel', end);
+  frame.addEventListener('wheel', e => { e.preventDefault(); setCropZoom(crop.zoom * Math.exp(-e.deltaY * 0.0015)); }, { passive: false });
+  $('#cropZoom').addEventListener('input', e => setCropZoom(Number(e.target.value)));
+  $('#cropRotate').addEventListener('click', () => {
+    crop.rot = (crop.rot + 90) % 360;
+    crop.src = rotatedSource(crop.base, crop.rot);
+    crop.zoom = 1; crop.cx = .5; crop.cy = .5;
+    renderCrop();
+  });
+  $('#cropOk').addEventListener('click', () => finishCrop(true));
+  $('#cropCancel').addEventListener('click', () => finishCrop(false));
+  window.addEventListener('resize', () => { if (crop.resolve) renderCrop(); });
+}
+
+/** 기기에 바로 넣을 작은 사진: 시트 칸에도 들어가도록 4만 자 이하로 */
+function compactDataUrl(cropped) {
+  for (const [h, q] of [[640, .74], [560, .7], [480, .66], [400, .62], [320, .58]]) {
+    const d = cropped(h).toDataURL('image/jpeg', q);
+    if (d.length <= LOCAL_IMAGE_MAX) return d;
+  }
+  return cropped(260).toDataURL('image/jpeg', .5);
+}
+
+async function handlePhoto(file) {
+  if (!file) return;
+  if (file.type && !file.type.startsWith('image/')) return setImgStatus('이미지 파일만 올릴 수 있어요.', 'warn');
+  const token = ++uploadToken;
+  setImgStatus('사진을 여는 중…');
+  let img;
+  try { img = await loadImage(file); }
+  catch (err) { return setImgStatus('이 사진 형식은 열 수 없어요. JPG나 PNG로 다시 시도해 주세요.', 'warn'); }
+  if (token !== uploadToken) return;
+
+  setImgStatus('');
+  const cropped = await openCropper(img);
+  if (!cropped || token !== uploadToken) return;
+
+  setFormImage(compactDataUrl(cropped));    // 미리보기 + 업로드 실패 시 대비
+  if (!isSyncOn()) {
+    setImgStatus('사진을 작게 줄여 이 기기에 저장해요. 시트를 연동한 뒤에 찍으면 더 선명한 사진이 드라이브에 올라가요.');
+    return;
+  }
+  setUploading(true);
+  setImgStatus('구글 드라이브에 사진을 올리는 중…');
+  try {
+    const { url } = await api('uploadImage', { data: cropped(1200).toDataURL('image/jpeg', .85), name: `soopsoop-${Date.now()}.jpg` });
+    if (token !== uploadToken) return;
+    setFormImage(url);
+    setImgStatus('드라이브에 올렸어요.', 'ok');
+  } catch (err) {
+    if (token !== uploadToken) return;
+    setImgStatus(`드라이브에 올리지 못해 사진을 작게 줄여 저장해요. (${syncErrorText(err)})`, 'warn');
+  } finally {
+    if (token === uploadToken) setUploading(false);
+  }
+}
+
+function openForm(record) {
+  state.editingId = record ? record.id : null;
+  uploadToken++;
+  setUploading(false);
+  $('#formTitle').textContent = record ? '기록 고쳐 쓰기' : '새 기록 남기기';
+  $('#formError').classList.add('hidden');
+  const r = record || {
+    mainType: state.tab !== '전체' ? state.tab : '도서',
+    subCategory: state.sub || '소설',
+    title: '', creator: '', date: today(), rating: 0, tags: [], quote: '', review: '', imageUrl: ''
+  };
+  $$('input[name="subCategory"]').forEach(i => i.checked = i.value === (r.subCategory || '소설'));
+  $('#fTitle').value = r.title;
+  $('#fCreator').value = r.creator;
+  $('#fDate').value = r.date;
+  $('#fTags').value = r.tags.join(', ');
+  $('#fQuote').value = r.quote;
+  $('#fReview').value = r.review;
+  setMainType(r.mainType);
+  setFormImage(r.imageUrl);
+  setImgStatus('');
+  state.formRating = r.rating || 0;
+  renderRatingInput();
+  renderTagPreview();
+  renderReviewCount();
+  $('#recordForm').scrollTop = 0;
+  openModal($('#formModal'));
+  if (window.matchMedia('(min-width: 640px)').matches) setTimeout(() => $('#fTitle').focus(), 250);
+}
+
+function showFormError(msg, focusEl) {
+  const e = $('#formError');
+  e.textContent = msg;
+  e.classList.remove('hidden');
+  if (focusEl) { focusEl.focus(); focusEl.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+}
+
+function handleSubmit(ev) {
+  ev.preventDefault();
+  if (state.uploading) return showFormError('사진을 올리는 중이에요. 잠시만 기다려 주세요.');
+  const mainType = currentMainType();
+  const sub = currentSub();
+  const title = $('#fTitle').value.trim();
+  const review = $('#fReview').value.replace(/\s+$/, '');
+
+  if (!title) return showFormError('제목을 적어 주세요.', $('#fTitle'));
+  if (mainType === '도서' && !sub) return showFormError('도서 분류를 골라 주세요.', $('#subGroup'));
+  if (!state.formRating) return showFormError('별점을 매겨 주세요.', $('#ratingInput'));
+  if (review.length > REVIEW_MAX) return showFormError(`감상평은 ${REVIEW_MAX.toLocaleString()}자까지 쓸 수 있어요.`, $('#fReview'));
+
+  const isEdit = state.editingId !== null;
+  const record = {
+    id: isEdit ? state.editingId : newId(),
+    mainType,
+    subCategory: mainType === '도서' ? sub : '',
+    title,
+    creator: $('#fCreator').value.trim(),
+    date: $('#fDate').value || today(),
+    rating: state.formRating,
+    tags: parseTags($('#fTags').value),
+    quote: $('#fQuote').value.trim(),
+    review,
+    imageUrl: state.formImage
+  };
+
+  const saved = saveRecordToStorage(record);
+  closeModal($('#formModal'));
+  render();
+  toast(isEdit ? '기록을 고쳐 두었어요' : `『${saved.title}』이(가) 서고에 꽂혔어요`);
+  if (isEdit) setTimeout(() => openDetail(saved.id), 240);
+}
+
+/* =========================================================
+   백업 / 불러오기
+   ========================================================= */
+function downloadBackup() {
+  const blob = new Blob([JSON.stringify(state.records, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = Object.assign(document.createElement('a'), { href: url, download: `soopsoop-backup-${today()}.json` });
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast(`${state.records.length}편의 기록을 백업했어요`);
+}
+
+function importBackup(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      const list = Array.isArray(data) ? data : (Array.isArray(data.records) ? data.records : null);
+      if (!list) throw new Error('형식 오류');
+      let added = 0, updated = 0;
+      const imported = [];
+      list.forEach(raw => {
+        const rec = normalizeRecord(raw);
+        if (!rec.title) return;
+        const i = state.records.findIndex(r => String(r.id) === String(rec.id));
+        if (i >= 0) { state.records[i] = rec; updated++; } else { state.records.push(rec); added++; }
+        imported.push(rec);
+      });
+      persist();
+      if (imported.length) enqueue({ action: 'bulk', records: imported });
+      render();
+      toast(`새 기록 ${added}편, 갱신 ${updated}편을 불러왔어요`);
+    } catch (err) {
+      toast('JSON 파일을 읽지 못했어요. 숲숲 백업 파일인지 확인해 주세요.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* =========================================================
+   시트 연동 · 저장 공간 설정
+   ========================================================= */
+let pendingConnect = null;
+
+function showSyncMsg(type, html) {
+  const el = $('#syncMsg');
+  el.className = 'text-sm rounded-xl px-4 py-3 leading-relaxed ' + ({
+    error: 'bg-[#FBF1EF] text-[#8E3B35]',
+    info:  'bg-mossLight text-moss',
+    plain: 'bg-white border border-line text-sub'
+  }[type] || '');
+  el.innerHTML = html;
+}
+
+async function renderStorageInfo() {
+  const { usage, quota, recordsBytes, persisted } = await getStorageInfo();
+  const pct = quota ? usage / quota * 100 : null;
+  $('#storagePct').textContent = pct === null ? fmtBytes(usage)
+    : `${pct < 0.1 ? '0.1% 미만' : pct.toFixed(pct < 10 ? 1 : 0) + '%'} 사용 중`;
+  $('#storageBar').style.width = pct === null ? '0' : `${Math.max(1.5, Math.min(100, pct))}%`;
+  $('#storageBar').className = 'h-full rounded-full transition-all duration-500 ' + (pct > 80 ? 'bg-[#C9893F]' : 'bg-moss');
+  const lines = [
+    `기록 ${state.records.length.toLocaleString()}편 · 약 ${fmtBytes(recordsBytes)}` +
+      (quota ? ` / 쓸 수 있는 공간 약 ${fmtBytes(quota)}` : ''),
+    store.kind === 'indexeddb'
+      ? (persisted ? '브라우저가 이 저장 공간을 지우지 않도록 보호하고 있어요.'
+                   : '기기 공간이 아주 부족해지면 브라우저가 지울 수도 있어요. 시트 연동이나 JSON 백업을 함께 써 주세요.')
+      : '이 브라우저에서는 작은 저장소(약 5MB)를 쓰고 있어요. 시트 연동을 권해요.'
+  ];
+  $('#storageText').innerHTML = lines.map(esc).join('<br>');
+}
+
+function renderFailedBox() {
+  $('#failedBox').classList.toggle('hidden', !failed.length);
+  $('#failedCount').textContent = failed.length;
+  $('#failedList').innerHTML = failed.map(f => {
+    const title = f.op.action === 'delete'
+      ? '(삭제한 기록)'
+      : `『${esc(f.op.record.title)}』`;
+    return `<li>• ${title} — ${esc(f.error)}</li>`;
+  }).join('');
+}
+
+function openSyncSettings() {
+  pendingConnect = null;
+  $('#sUrl').value = syncConfig ? syncConfig.url : '';
+  $('#sKey').value = syncConfig ? syncConfig.key : '';
+  $('#syncChoice').classList.add('hidden');
+  $('#btnConnect').classList.remove('hidden');
+  $('#btnConnect').textContent = isSyncOn() ? '다시 연결' : '연결하기';
+  $('#btnDisconnect').classList.toggle('hidden', !isSyncOn());
+  if (isSyncOn() && sync.status === 'error') showSyncMsg('error', esc(syncErrorText(sync.lastError)) + (queue.length ? `<br>아직 시트로 보내지 못한 변경이 ${queue.length}건 있어요.` : ''));
+  else if (isSyncOn()) showSyncMsg('info', `연결되어 있어요. 시트의 기록 ${state.records.length}편을 보고 있어요.`);
+  else $('#syncMsg').className = 'hidden';
+  renderFailedBox();
+  renderStorageInfo();
+  renderShareBox();
+  openModal($('#syncModal'));
+}
+
+/* ---------- 다른 기기 연결: QR / 링크 ----------
+   링크의 # 뒤(fragment)는 서버로 전송되지 않고, 열자마자 주소창에서 지움 */
+const b64urlEncode = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const b64urlDecode = s => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));
+
+function connectLink() {
+  return location.href.split('#')[0] + '#connect=' + b64urlEncode(JSON.stringify({ u: syncConfig.url, k: syncConfig.key }));
+}
+function readConnectHash() {
+  const m = /[#&]connect=([A-Za-z0-9_-]+)/.exec(location.hash);
+  if (!m) return null;
+  history.replaceState(null, '', location.href.split('#')[0]);
+  try {
+    const o = JSON.parse(b64urlDecode(m[1]));
+    if (o && o.u && o.k) return { url: o.u, key: o.k };
+  } catch (err) {}
+  toast('연결 링크가 올바르지 않아요. 다시 복사해 주세요.');
+  return null;
+}
+
+let qrLibPromise = null;
+function loadQrLib() {
+  if (window.QRCode) return Promise.resolve();
+  if (!qrLibPromise) {
+    qrLibPromise = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+      s.onload = resolve;
+      s.onerror = () => { qrLibPromise = null; reject(new Error('qr')); };
+      document.head.appendChild(s);
+    });
+  }
+  return qrLibPromise;
+}
+async function renderShareBox() {
+  $('#shareBox').classList.toggle('hidden', !isSyncOn());
+  if (!isSyncOn()) return;
+  const localOnlyAddr = location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  $('#shareNote').textContent = (localOnlyAddr
+    ? '지금 주소는 이 컴퓨터에서만 열려요. GitHub Pages 주소로 연 화면의 QR을 찍어 주세요. '
+    : '') + '이 QR과 링크에는 비밀번호가 들어 있어요. 다른 사람에게 보여 주지 마세요.';
+  const box = $('#qrBox');
+  box.textContent = 'QR 만드는 중…';
+  try {
+    await loadQrLib();
+    box.innerHTML = '';
+    new QRCode(box, { text: connectLink(), width: 240, height: 240, colorDark: '#2B2A28', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+    box.removeAttribute('title');   // 라이브러리가 넣는 링크(비밀번호 포함) 툴팁 제거
+  } catch (err) {
+    box.textContent = 'QR을 불러오지 못했어요. 링크 복사를 써 주세요.';
+  }
+}
+async function copyConnectLink() {
+  const link = connectLink();
+  try { await navigator.clipboard.writeText(link); toast('연결 링크를 복사했어요. 휴대폰으로 보내 열어 보세요.'); }
+  catch (err) { prompt('아래 링크를 복사해 주세요', link); }
+}
+
+async function handleConnect() {
+  const cfg = { url: $('#sUrl').value.trim(), key: $('#sKey').value };
+  if (!/^https:\/\/script\.google\.com\/.+\/exec\/?$/.test(cfg.url)) {
+    return showSyncMsg('error', 'Apps Script 웹 앱 URL을 넣어 주세요.<br><span class="text-xs">https://script.google.com/macros/s/…/exec 형태예요.</span>');
+  }
+  if (!cfg.key) return showSyncMsg('error', 'Code.gs에 적은 비밀번호(SECRET)를 넣어 주세요.');
+
+  const btn = $('#btnConnect');
+  const label = btn.textContent;
+  btn.disabled = true; btn.textContent = '연결 중…';
+  $('#syncChoice').classList.add('hidden');
+  showSyncMsg('plain', '시트에 연결하고 있어요…');
+  try {
+    if (isSyncOn() && cfg.url === syncConfig.url && cfg.key === syncConfig.key) {
+      // 같은 설정으로 다시 연결: 밀린 전송부터 처리하고 새로 받아오기
+      sync.lastError = null;
+      await pullFromSheet();
+      if (sync.status === 'error') return showSyncMsg('error', esc(syncErrorText(sync.lastError)));
+      showSyncMsg('info', `다시 연결했어요. 시트의 기록 ${state.records.length}편을 보고 있어요.`);
+      renderFailedBox(); renderStorageInfo();
+      return;
+    }
+    const data = await api('list', {}, cfg);
+    const sheetIds = new Set(data.records.map(r => String(r.id)));
+    const localOnly = state.records.filter(r => !sheetIds.has(String(r.id)));
+    pendingConnect = { cfg, sheetRecords: data.records, localOnly };
+    // 처음 들어 있던 샘플만 있다면 묻지 않고 시트 기록으로 시작
+    if (!localOnly.some(r => !SAMPLE_IDS.has(String(r.id)))) return finishConnect(false);
+
+    const samples = localOnly.filter(r => SAMPLE_IDS.has(String(r.id))).length;
+    showSyncMsg('info', `연결됐어요! 시트에 기록 <b>${data.records.length}편</b>이 있고, 시트에 없는 이 기기의 기록이 <b>${localOnly.length}편</b> 있어요.`
+      + (samples ? `<br><span class="text-xs">(처음 들어 있던 샘플 기록 ${samples}편 포함)</span>` : '')
+      + '<br>어떻게 할까요?');
+    $('#btnMergeUpload').textContent = `이 기기 기록 ${localOnly.length}편도 시트에 올려 합치기`;
+    $('#btnSheetOnly').textContent = data.records.length
+      ? `시트 기록 ${data.records.length}편만 쓰기 (이 기기 기록 ${localOnly.length}편은 지워져요)`
+      : `빈 시트로 새로 시작하기 (이 기기 기록 ${localOnly.length}편은 지워져요)`;
+    $('#syncChoice').classList.remove('hidden');
+    btn.classList.add('hidden');
+  } catch (err) {
+    showSyncMsg('error', esc(syncErrorText(err)));
+  } finally {
+    btn.disabled = false; btn.textContent = label;
+  }
+}
+
+function finishConnect(upload) {
+  if (!pendingConnect) return;
+  const { cfg, sheetRecords, localOnly } = pendingConnect;
+  pendingConnect = null;
+  syncConfig = cfg;
+  writeJSON(SYNC_KEY, syncConfig);
+  queue = upload && localOnly.length ? [{ action: 'bulk', records: localOnly }] : [];
+  failed = [];
+  saveQueue(); saveFailed();
+  sync.lastError = null;
+  state.records = [...sheetRecords.map(normalizeRecord), ...(upload ? localOnly : [])];
+  persist();
+  sync.lastPull = Date.now();
+  render();
+  closeModal($('#syncModal'));
+  toast(upload ? `시트와 연결하고 기록 ${localOnly.length}편을 올리고 있어요` : '구글 시트와 연결됐어요');
+  setSyncStatus('ok');
+  flushQueue();
+}
+
+function disconnectSync() {
+  if (queue.length && !confirm(`아직 시트로 보내지 못한 변경이 ${queue.length}건 있어요.\n연동을 해제하면 이 변경은 시트에 반영되지 않아요. 계속할까요?`)) return;
+  syncConfig = null; queue = []; failed = [];
+  try { localStorage.removeItem(SYNC_KEY); } catch (err) {}
+  saveQueue(); saveFailed();
+  setSyncStatus('');
+  closeModal($('#syncModal'));
+  toast('연동을 해제했어요. 기록은 이 기기에 그대로 남아 있어요.');
+}
+
+async function retryFailed() {
+  if (!failed.length) return;
+  // 지금 이 기기에 있는 최신 내용으로 다시 보냄 (그사이 고쳤을 수 있으니)
+  failed.forEach(f => {
+    if (f.op.action === 'upsert') {
+      const cur = state.records.find(r => String(r.id) === String(f.op.record.id));
+      if (cur) queue.push({ action: 'upsert', record: cur });
+    } else {
+      queue.push(f.op);
+    }
+  });
+  failed = [];
+  saveQueue(); saveFailed();
+  sync.writeVersion++;
+  $('#btnRetryFailed').disabled = true;
+  await flushQueue();
+  $('#btnRetryFailed').disabled = false;
+  renderFailedBox();
+  setSyncStatus(sync.status);
+  toast(failed.length ? `아직 ${failed.length}건은 올리지 못했어요` : '모두 시트에 올렸어요');
+}
+
+/* =========================================================
+   이벤트
+   ========================================================= */
+function bindEvents() {
+  $('#btnNew').addEventListener('click', () => openForm());
+  $('#btnBackup').addEventListener('click', downloadBackup);
+  $('#btnImport').addEventListener('click', () => $('#importFile').click());
+  $('#importFile').addEventListener('change', e => {
+    if (e.target.files[0]) importBackup(e.target.files[0]);
+    e.target.value = '';
+  });
+
+  // 탭 / 서브 필터
+  $('#tabs').addEventListener('click', e => {
+    const b = e.target.closest('[data-tab]'); if (!b) return;
+    state.tab = b.dataset.tab;
+    if (state.tab !== '도서') state.sub = '';
+    renderTabs(); renderGrid();
+  });
+  $('#subChips').addEventListener('click', e => {
+    const b = e.target.closest('[data-sub]'); if (!b) return;
+    state.sub = state.sub === b.dataset.sub ? '' : b.dataset.sub;
+    renderTabs(); renderGrid();
+  });
+
+  // 검색 / 정렬
+  $('#search').addEventListener('input', e => { state.q = e.target.value; renderGrid(); });
+  $('#sort').addEventListener('change', e => { state.sort = e.target.value; renderGrid(); });
+
+  // 카드 → 상세
+  $('#grid').addEventListener('click', e => {
+    const c = e.target.closest('.card'); if (c) openDetail(c.dataset.id);
+  });
+  $('#grid').addEventListener('keydown', e => {
+    const c = e.target.closest('.card');
+    if (c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openDetail(c.dataset.id); }
+  });
+
+  // 상세 모달 안의 태그 → 태그로 검색
+  $('#detailBody').addEventListener('click', e => {
+    const t = e.target.closest('[data-tag]'); if (!t) return;
+    state.q = t.dataset.tag; $('#search').value = state.q;
+    state.tab = '전체'; state.sub = '';
+    closeModal($('#detailModal'));
+    render();
+  });
+
+  $('#btnDelete').addEventListener('click', handleDelete);
+  $('#btnEdit').addEventListener('click', () => {
+    const r = state.records.find(x => String(x.id) === String(state.detailId));
+    closeModal($('#detailModal'));
+    if (r) setTimeout(() => openForm(r), 200);
+  });
+
+  // 시트 연동
+  $('#btnSync').addEventListener('click', openSyncSettings);
+  $('#syncStatus').addEventListener('click', openSyncSettings);
+  $('#btnConnect').addEventListener('click', handleConnect);
+  $('#btnMergeUpload').addEventListener('click', () => finishConnect(true));
+  $('#btnSheetOnly').addEventListener('click', () => finishConnect(false));
+  $('#btnDisconnect').addEventListener('click', disconnectSync);
+  $('#btnRetryFailed').addEventListener('click', retryFailed);
+  $('#btnCopyLink').addEventListener('click', copyConnectLink);
+  $('#btnRefresh').addEventListener('click', async () => {
+    if (sync.status === 'syncing') return;
+    sync.lastError = null;
+    await pullFromSheet();
+    if (sync.status === 'ok') toast('시트에서 최신 기록을 받아왔어요');
+  });
+  $('#sKey').addEventListener('keydown', e => { if (e.key === 'Enter') handleConnect(); });
+
+  // 다른 기기에서 쓴 기록 반영: 앱으로 돌아올 때마다(30초 간격) 시트에서 다시 받아오기
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && Date.now() - sync.lastPull > 30000) pullFromSheet();
+  });
+  window.addEventListener('online', () => pullFromSheet());
+  // 이미 열려 있는 탭에서 연결 링크를 연 경우
+  window.addEventListener('hashchange', () => {
+    const cfg = readConnectHash();
+    if (!cfg) return;
+    openSyncSettings();
+    $('#sUrl').value = cfg.url;
+    $('#sKey').value = cfg.key;
+    handleConnect();
+  });
+
+  // 모달 닫기 (배경 / 닫기 버튼 / ESC)
+  document.addEventListener('click', e => {
+    const c = e.target.closest('[data-close]');
+    if (c) closeModal(c.closest('.modal'));
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const open = $$('.modal').filter(m => !m.classList.contains('hidden'));
+    if (!open.length) return;
+    const top = open.sort((a, b) => getComputedStyle(b).zIndex - getComputedStyle(a).zIndex)[0];
+    if (top.id === 'cropModal') finishCrop(false); else closeModal(top);
+  });
+
+  // 폼
+  $('#mainTypeGroup').addEventListener('change', () => setMainType(currentMainType()));
+  $('#subGroup').addEventListener('change', renderImgPreview);
+  $('#recordForm').addEventListener('submit', handleSubmit);
+  $('#fTags').addEventListener('input', renderTagPreview);
+  $('#fReview').addEventListener('input', renderReviewCount);
+  $('#fTitle').addEventListener('input', renderImgPreview);
+  $('#fCreator').addEventListener('input', renderImgPreview);
+  $('#recordForm').addEventListener('input', () => $('#formError').classList.add('hidden'));
+
+  // 표지 사진
+  ['#fPhotoCam', '#fPhotoPick'].forEach(sel => $(sel).addEventListener('change', e => {
+    handlePhoto(e.target.files[0]);
+    e.target.value = '';
+  }));
+  $('#fImage').addEventListener('input', e => {
+    uploadToken++; setUploading(false);
+    state.formImage = e.target.value.trim();
+    $('#btnImgClear').classList.toggle('hidden', !state.formImage);
+    setImgStatus('');
+    renderImgPreview();
+  });
+  $('#btnImgClear').addEventListener('click', () => {
+    uploadToken++; setUploading(false);
+    setFormImage('');
+    setImgStatus('');
+  });
+
+  // 클릭형 별점 (반 개 단위)
+  const ri = $('#ratingInput');
+  ri.addEventListener('pointermove', e => { if (e.pointerType === 'mouse') renderRatingInput(ratingFromEvent(e)); });
+  ri.addEventListener('pointerleave', () => renderRatingInput());
+  ri.addEventListener('click', e => {
+    state.formRating = ratingFromEvent(e);
+    renderRatingInput();
+    $('#formError').classList.add('hidden');
+  });
+  ri.addEventListener('keydown', e => {
+    const step = { ArrowRight: .5, ArrowUp: .5, ArrowLeft: -.5, ArrowDown: -.5 }[e.key];
+    if (step === undefined) return;
+    e.preventDefault();
+    state.formRating = Math.max(1, Math.min(5, (state.formRating || 0) + step));
+    renderRatingInput();
+  });
+}
+
+/* ---------- 시작 ---------- */
+(async function init() {
+  buildSubGroup();
+  bindEvents();
+  bindCropper();
+  const linkCfg = readConnectHash();     // 연결 링크/QR로 열었는지
+  await loadAll();
+  render();
+  if (linkCfg) {
+    openSyncSettings();
+    $('#sUrl').value = linkCfg.url;
+    $('#sKey').value = linkCfg.key;
+    handleConnect();
+  } else if (isSyncOn()) {
+    setSyncStatus('syncing');
+    pullFromSheet();
+  }
+})();
+</script>
+</body>
+</html>
